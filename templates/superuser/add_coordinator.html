@@ -53,6 +53,15 @@
     </style>
 </head>
 <body>
+        {% if messages %}
+            {% for message in messages %}
+<div class="container-fluid p-0">
+  <div class="alert {{ message.tags }}" role="alert" >
+    {{ message }}
+  </div>
+</div>
+{% endfor %}
+        {% endif %}
     <div class="container">
         <h2>Add Coordinator</h2>
         <form method="post">
@@ -65,6 +74,7 @@
                 <button type="submit" class="btn">Add Coordinator</button>
             </div>
         </form>
+        <a href="{% url 'superuser_dashboard' %}">Dashboard</a>
     </div>
 </body>
 </html>

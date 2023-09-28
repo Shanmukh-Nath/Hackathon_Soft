@@ -9,7 +9,7 @@ from django.contrib.auth.hashers import make_password,check_password
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode, int_to_base36
 from django.views import View
@@ -114,6 +114,8 @@ def coordinator_login(request):
         print(f"Password: {password}")
         user = authenticate(request, username=username, password=password)
         if user is not None:
+            user.session_key = request.session.session_key
+            user.save()
             login(request, user)
             return redirect('coordinator_dashboard')
         else:
@@ -157,9 +159,9 @@ def edit_participant_coordinator(request,participant_id):
     if request.method == 'POST':
         form = ParticipantEditForm(request.POST, instance=participant)
         if form.is_valid():
-            participant.edited_by = request.user.username
+            participant.edited_by = request.user
             form.save()
-            return redirect('view_participants')
+            return redirect('view_participants_coordinator')
     else:
         form = ParticipantEditForm(instance=participant)
 
@@ -212,6 +214,8 @@ def superuser_login(request):
         password = request.POST['password']
         user = authenticate(request, username=username, password=password)
         if user is not None and user.is_superuser:
+            user.session_key = request.session.session_key
+            user.save()
             login(request, user)
             return redirect('superuser_dashboard')
         else:
@@ -237,6 +241,17 @@ def superuser_dashboard(request):
     else:
         return redirect('coordinator_login')
 
+
+@login_required(login_url='/superuser/login/')
+def delete_coordinator_super(request,coordinator_id):
+        coor = Coordinator.objects.get(pk=coordinator_id)
+        email = coor.email
+        if coor.is_setup_complete:
+            user = User.objects.get(email=email)
+            user.delete()
+        coor.delete()
+        messages.warning(request,f"User '{email}' has been deleted successfully.")
+        return redirect('superuser_dashboard')
 
 @login_required(login_url='/superuser/login/')
 def add_coordinator(request):

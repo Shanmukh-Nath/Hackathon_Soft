@@ -27,6 +27,15 @@
     background-color: yellow;
   }
 </style>
+        {% if messages %}
+            {% for message in messages %}
+<div class="container-fluid p-0">
+  <div class="alert {{ message.tags }}" role="alert" >
+    {{ message }}
+  </div>
+</div>
+{% endfor %}
+        {% endif %}
 <input type="text" id="searchInput" onkeyup="searchTable()" placeholder="Search for coordinators..." />
 <a href="{% url 'superuser_dashboard' %}">Go Back</a>
 <table>

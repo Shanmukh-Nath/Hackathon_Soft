@@ -59,6 +59,15 @@
     </style>
 </head>
 <body>
+        {% if messages %}
+            {% for message in messages %}
+<div class="container-fluid p-0">
+  <div class="alert {{ message.tags }}" role="alert" >
+    {{ message }}
+  </div>
+</div>
+{% endfor %}
+        {% endif %}
     <div class="container">
         <h2>Edit Coordinator</h2>
         <form method="post">
@@ -66,6 +75,7 @@
             {{ form.as_p }}
 
             <button type="submit">Save</button>
+            <a href="{% url 'view_participants_super' %}"><button type="button">Cancel</button></a>
         </form>
     </div>
 </body>

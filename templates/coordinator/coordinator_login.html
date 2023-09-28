@@ -56,15 +56,15 @@
 <body>
     <div class="container">
         <h2>Coordinator Login</h2>
-{#        {% if messages %}#}
-{#            {% for message in messages %}#}
-{#<div class="container-fluid p-0">#}
-{#  <div class="alert {{ message.tags }}" role="alert" >#}
-{#    {{ message }}#}
-{#  </div>#}
-{#</div>#}
-{#{% endfor %}#}
-{#        {% endif %}#}
+        {% if messages %}
+            {% for message in messages %}
+<div class="container-fluid p-0">
+  <div class="alert {{ message.tags }}" role="alert" >
+    {{ message }}
+  </div>
+</div>
+{% endfor %}
+        {% endif %}
         <form method="post">
             {% csrf_token %}
             <div class="form-group">

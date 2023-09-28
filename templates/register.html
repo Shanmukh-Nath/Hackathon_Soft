@@ -13,7 +13,15 @@
 </head>
 
 <body>
-
+        {% if messages %}
+            {% for message in messages %}
+<div class="container-fluid p-0">
+  <div class="alert {{ message.tags }}" role="alert" >
+    {{ message }}
+  </div>
+</div>
+{% endfor %}
+        {% endif %}
     <div class="form">
         <h1>Registration Form</h1>
     <form method="post">

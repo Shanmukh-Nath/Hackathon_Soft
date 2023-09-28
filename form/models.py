@@ -21,7 +21,7 @@ class Coordinator(models.Model):
     password = models.CharField(max_length=100,default='')
     date_of_birth = models.DateField(default='2023-12-12')
     email = models.EmailField(unique=True,default='')
-    mobile = models.IntegerField(max_length=15,default='')
+    mobile = models.IntegerField(max_length=15,blank=True,null=True)
     state = models.CharField(max_length=100,default='')
     college = models.CharField(max_length=100,default='')
     aadhar = models.CharField(max_length=12,default='', validators=[MinLengthValidator(12)])
@@ -68,4 +68,7 @@ class Participant(models.Model):
     is_individual = models.BooleanField()
     team = models.ForeignKey(Team, on_delete=models.CASCADE, null=True, blank=True)
     edited_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+
+    def __str__(self):
+        return self.first_name
 

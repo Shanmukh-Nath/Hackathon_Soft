@@ -4,6 +4,15 @@
     <title>Registration Success</title>
 </head>
 <body>
+        {% if messages %}
+            {% for message in messages %}
+<div class="container-fluid p-0">
+  <div class="alert {{ message.tags }}" role="alert" >
+    {{ message }}
+  </div>
+</div>
+{% endfor %}
+        {% endif %}
     <h1>Registration Successful</h1>
     <p>Thank you for registering for the hackathon. You have successfully registered.</p>
 </body>

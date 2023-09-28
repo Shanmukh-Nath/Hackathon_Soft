@@ -1,4 +1,13 @@
 <!-- edit_coordinator.html -->
+        {% if messages %}
+            {% for message in messages %}
+<div class="container-fluid p-0">
+  <div class="alert {{ message.tags }}" role="alert" >
+    {{ message }}
+  </div>
+</div>
+{% endfor %}
+        {% endif %}
 <h2>Edit Coordinator</h2>
 <form method="post">
   {% csrf_token %}
