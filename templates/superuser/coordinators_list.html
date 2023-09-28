@@ -1,0 +1,88 @@
+<style>
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+  }
+
+  th {
+    background-color: #f2f2f2;
+  }
+
+  .tick {
+    color: green;
+    font-weight: bold;
+  }
+
+  .cross {
+    color: red;
+    font-weight: bold;
+  }
+  .highlight {
+    background-color: yellow;
+  }
+</style>
+<input type="text" id="searchInput" onkeyup="searchTable()" placeholder="Search for coordinators..." />
+
+<table>
+  <thead>
+    <tr>
+      <th>Email</th>
+      <th>First Name</th>
+      <th>Last Name</th>
+      <th>Is Invited</th>
+      <th>Is Setup Complete</th>
+      <!-- Add more boolean attributes as needed -->
+    </tr>
+  </thead>
+  <tbody>
+    {% for coordinator in coordinators %}
+    <tr>
+      <td>{{ coordinator.email }}</td>
+      <td>{{ coordinator.first_name }}</td>
+      <td>{{ coordinator.last_name }}</td>
+      <td>{% if coordinator.is_invited %} <span class="tick">&#10004;</span> {% else %} <span class="cross">&#10006;</span> {% endif %}</td>
+      <td>{% if coordinator.is_setup_complete %} <span class="tick">&#10004;</span> {% else %} <span class="cross">&#10006;</span> {% endif %}</td>
+      <!-- Add more boolean attributes as needed -->
+    <td>
+        <a href="{% url 'edit_coordinator' coordinator.id %}" class="btn btn-primary">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil" viewBox="0 0 16 16">
+  <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/>
+</svg>
+</a>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<script>
+  function searchTable() {
+    var input, filter, table, tr, td, i, txtValue;
+    input = document.getElementById("searchInput");
+    filter = input.value.toUpperCase();
+    table = document.querySelector("table");
+    tr = table.getElementsByTagName("tr");
+
+    for (i = 0; i < tr.length; i++) {
+      td = tr[i].getElementsByTagName("td");
+      for (var j = 0; j < td.length; j++) {
+        if (td[j]) {
+          txtValue = td[j].textContent || td[j].innerText;
+          if (txtValue.toUpperCase().indexOf(filter) > -1) {
+            td[j].innerHTML = txtValue.replace(
+              new RegExp(filter, "gi"),
+              match => `<span class="highlight">${match}</span>`
+            );
+          } else {
+            td[j].innerHTML = txtValue;
+          }
+        }
+      }
+    }
+  }
+</script>

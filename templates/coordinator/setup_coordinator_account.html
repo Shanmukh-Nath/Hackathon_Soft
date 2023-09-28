@@ -57,6 +57,8 @@
         <h2>Coordinator Account Setup</h2>
         <form method="post">
             <input type="text" value="{{ email }}" disabled>
+            <label>Username (For Login)</label>
+            <input type="text"  name="username">
             {% csrf_token %}
             {{ form.as_p }}
             <div class="form-group">

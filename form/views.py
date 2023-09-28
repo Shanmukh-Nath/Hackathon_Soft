@@ -1,7 +1,9 @@
 import csv
+import datetime
 
 from django.contrib import messages
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import login, authenticate, get_user_model
+from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password,check_password
 from django.contrib.auth.tokens import default_token_generator
@@ -10,6 +12,8 @@ from django.core.mail import send_mail
 from django.shortcuts import render, redirect
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode, int_to_base36
+from django.views import View
+from django.contrib.auth.models import User
 
 from .tokens import complex_token_generator
 from .forms import RegistrationForm, SuperuserLoginForm,SuperCoordinatorForm,CoordinatorForm
@@ -50,7 +54,6 @@ def send_invitations(request):
 # views.py
 
 def setup_coordinator_account(request,uidb64,token):
-    print("Here")
     try:
         uid = urlsafe_base64_decode(uidb64)
         coordinator = Coordinator.objects.get(pk=uid)
@@ -59,9 +62,10 @@ def setup_coordinator_account(request,uidb64,token):
 
         if is_valid_token and coordinator.is_used == False:
             if request.method == 'POST':
-                print(request.POST)
                 form = CoordinatorForm(request.POST)
                 if form.is_valid():
+                    email = coordinator.email
+                    username= request.POST['username']
                     first_name = request.POST['first_name']
                     last_name = request.POST['last_name']
                     password = request.POST['password']
@@ -71,17 +75,24 @@ def setup_coordinator_account(request,uidb64,token):
                     college = request.POST['college']
                     aadhar = request.POST['aadhar']
                     hash = make_password(password)
+
+                    # Create a User object for authentication
+                    user = User.objects.create_user(username=username, email=email)
+                    user.set_password(password)
+                    user.last_name = last_name
+                    user.save()
+
+                    # Update the Coordinator object with additional details
                     coordinator.first_name = first_name
-                    coordinator.last_name = last_name
-                    coordinator.password = hash
                     coordinator.date_of_birth = date_of_birth
                     coordinator.mobile = mobile
                     coordinator.state = state
                     coordinator.college = college
                     coordinator.aadhar = aadhar
                     coordinator.is_setup_complete = True
-                    coordinator.is_used = True
+                    #coordinator.is_used = True
                     coordinator.save()
+
                     return redirect('coordinator_login')
             else:
                 form = CoordinatorForm()
@@ -91,49 +102,51 @@ def setup_coordinator_account(request,uidb64,token):
                 print("Error")
     return redirect("invalid_activation_link")
 
+
+
 def coordinator_login(request):
+    #send_invitations(request)
     if request.method == 'POST':
-        email = request.POST['email']
+        username = request.POST['username']
         password = request.POST['password']
-        coo = Coordinator.objects.get(email=email)
-        user = check_password(password,coo.password)
-        if user :
+        print(f"Username: {username}")
+        print(f"Password: {password}")
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
             return redirect('coordinator_dashboard')
         else:
+            print("invalid")
             messages.error(request, 'Invalid credentials. Please try again.')
 
     return render(request, 'coordinator/coordinator_login.html')
 
-def coordinator_dashboard(request):
+@login_required(login_url='/superuser/login/')
+def view_coordinators(request):
     coordinators = Coordinator.objects.all()
+    return render(request,'superuser/coordinators_list.html',{'coordinators':coordinators})
+
+
+
+
+def view_participants(request):
+    pass
+@login_required(login_url='/coordinator/login/')
+def coordinator_dashboard(request):
+    coordinators = Participant.objects.all()
     l = len(coordinators)
     return render(request, "coordinator/coordinator_dashboard.html", {"length": l})
 
-def activate_coordinator_account(request, uidb64, token):
-    try:
-        uid = urlsafe_base64_decode(uidb64)
-        coordinator = Coordinator.objects.get(pk=uid)
-        # Check if the token is valid
-        is_valid_token = complex_token_generator.check_token(coordinator, token)
+@login_required(login_url='/superuser/login/')
+def edit_coordinator(request,id):
+    return None
 
-        if is_valid_token:
-            if request.method == "POST":
-                # Process the account setup form
-                username = request.POST["username"]
-                password = request.POST["password"]
-                coordinator.username = username
-                coordinator.set_password(password)
-                coordinator.is_setup_complete = True
-                coordinator.save()
-                login(request, coordinator)  # Log in the coordinator
-                return redirect("coordinator_dashboard")  # Redirect to the dashboard
 
-            return render(request, "coordinator/setup_coordinator_account.html", {"coordinator": coordinator})
+def logout(request):
+    print(request.user)
+    request.session.flush()
+    return redirect('registration')
 
-    except (TypeError, ValueError, OverflowError, Coordinator.DoesNotExist):
-        pass
-
-    return redirect("invalid_token_page")  # Redirect to an error page if the token is invalid
 
 def invalid_activation_link(request):
     return render(request,'coordinator/invalid_token.html')
@@ -158,7 +171,7 @@ def superuser_login(request):
 
     return render(request, 'superuser/superuser_login.html')
 
-
+@login_required(login_url='/superuser/login/')
 def send_invite(request):
     coordinators = Coordinator.objects.all()
     cd = []
@@ -166,11 +179,14 @@ def send_invite(request):
         if c.is_invited == False:
             cd.append(c.email)
     return render(request,'superuser/send_invite.html',{'emails':cd})
+
+@login_required(login_url='/superuser/login/')
 def superuser_dashboard(request):
     coordinators = Coordinator.objects.all()
     l = len(coordinators)
     return render(request, "superuser/superuser_dashboard.html", {"length": l})
 
+@login_required(login_url='/superuser/login/')
 def add_coordinator(request):
     if request.method == "POST":
         form = SuperCoordinatorForm(request.POST)

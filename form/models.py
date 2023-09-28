@@ -1,3 +1,5 @@
+from django.utils import timezone
+
 from django.db import models
 from django.core.validators import MinLengthValidator
 from django.contrib.auth.models import AbstractUser
@@ -26,6 +28,7 @@ class Coordinator(models.Model):
     is_invited = models.BooleanField(default=False)
     is_setup_complete = models.BooleanField(default=False)
     is_used = models.BooleanField(default=False)
+    last_login = models.CharField(default="2023-09-28 04:16:42.041659",max_length=100)
 
     def __str__(self):
         return self.email
