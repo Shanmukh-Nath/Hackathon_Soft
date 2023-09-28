@@ -63,7 +63,7 @@
         <a href="{% url 'add_coordinator' %}" class="btn">Add Coordinator</a>
         <a href="{% url 'send_invite' %}" class="btn">Send Invitations</a>
         <a href="{% url 'view_coordinators' %}" class="btn">View Coordinators</a>
-        <a href="{% url 'view_participants' %}" class="btn">View Participants</a>
+        <a href="{% url 'view_participants_super' %}" class="btn">View Participants</a>
     </div>
 <form id="my_form" action="{% url 'logout' %}" method="POST">
              {% csrf_token %}

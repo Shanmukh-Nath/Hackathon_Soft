@@ -2,7 +2,7 @@ from django.utils import timezone
 
 from django.db import models
 from django.core.validators import MinLengthValidator
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, User
 
 
 class Superuser(models.Model):
@@ -29,6 +29,7 @@ class Coordinator(models.Model):
     is_setup_complete = models.BooleanField(default=False)
     is_used = models.BooleanField(default=False)
     last_login = models.CharField(default="2023-09-28 04:16:42.041659",max_length=100)
+    edited_by = models.ForeignKey(User,on_delete=models.SET_NULL,null=True,blank=True)
 
     def __str__(self):
         return self.email
@@ -66,4 +67,5 @@ class Participant(models.Model):
     domain_of_interest = models.ForeignKey(Domain, on_delete=models.CASCADE)
     is_individual = models.BooleanField()
     team = models.ForeignKey(Team, on_delete=models.CASCADE, null=True, blank=True)
+    edited_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
 

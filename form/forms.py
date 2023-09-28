@@ -25,6 +25,25 @@ class CoordinatorForm(forms.ModelForm):
         model = Coordinator
         fields = '__all__'
 
+
+class ParticipantEditForm(forms.ModelForm):
+    class Meta:
+        model = Participant
+        exclude = ['edited_by','is_individual']  # Include all fields from the Participant model
+        widgets = {
+            'date_of_birth': forms.DateInput(attrs={'type': 'date'}),
+        }
+
+
+
+class CoordinatorEditForm(forms.ModelForm):
+    class Meta:
+        model = Coordinator
+        fields = ['email', 'first_name', 'last_name', 'date_of_birth', 'mobile', 'state', 'college', 'aadhar']
+        widgets = {
+            'date_of_birth': forms.DateInput(attrs={'type': 'date'}),
+        }
+
 class SuperCoordinatorForm(forms.ModelForm):
     class Meta:
         model = Coordinator

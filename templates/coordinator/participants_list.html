@@ -28,15 +28,20 @@
   }
 </style>
 <input type="text" id="searchInput" onkeyup="searchTable()" placeholder="Search for coordinators..." />
-
+<a href="{% url 'coordinator_dashboard' %}">Go Back</a>
 <table>
   <thead>
     <tr>
       <th>Email</th>
       <th>First Name</th>
       <th>Last Name</th>
-      <th>Is Invited</th>
-      <th>Is Setup Complete</th>
+      <th>Date of Birth</th>
+      <th>Mobile</th>
+      <th>State</th>
+      <th>College</th>
+      <th>Domain</th>
+      <th>Team Name</th>
+
       <!-- Add more boolean attributes as needed -->
     </tr>
   </thead>
@@ -46,11 +51,17 @@
       <td>{{ coordinator.email }}</td>
       <td>{{ coordinator.first_name }}</td>
       <td>{{ coordinator.last_name }}</td>
-      <td>{% if coordinator.is_invited %} <span class="tick">&#10004;</span> {% else %} <span class="cross">&#10006;</span> {% endif %}</td>
-      <td>{% if coordinator.is_setup_complete %} <span class="tick">&#10004;</span> {% else %} <span class="cross">&#10006;</span> {% endif %}</td>
+        <td>{{ coordinator.date_of_birth }}</td>
+        <td>{{ coordinator.mobile }}</td>
+        <td>{{ coordinator.state }}</td>
+        <td>{{ coordinator.college }}</td>
+        <td>{{ coordinator.domain_of_interest.domain_name }}</td>
+        <td>{{ coordinator.team.team_name }}</td>
+
+
       <!-- Add more boolean attributes as needed -->
     <td>
-        <a href="{% url 'edit_coordinator' coordinator.id %}">Edit</a>
+        <a href="{% url 'edit_participant_coordinator' coordinator.id %}">Edit</a>
       </td>
     </tr>
     {% endfor %}

@@ -60,7 +60,7 @@
     <div class="container">
         <h2>Coordinator Dashboard</h2>
         <h3>There are total {{ length }} Participants</h3>
-
+        <a href="{% url 'view_participants_coordinator' %}" class="btn">View Participants</a>
     </div>
     <form id="my_form" action="{% url 'logout' %}" method="POST">
              {% csrf_token %}

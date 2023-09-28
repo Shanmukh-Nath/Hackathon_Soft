@@ -55,6 +55,11 @@
 <body>
     <div class="container">
         <h2>Superuser Login</h2>
+        {% if messages %}
+            {% for message in messages %}
+            <h2 {% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message }}</h2>
+                {% endfor %}
+        {% endif %}
         <form method="post">
             {% csrf_token %}
             <div class="form-group">
