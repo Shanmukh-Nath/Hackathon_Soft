@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Registration Form</title>
+    <style>
+        .form{
+            left: 15%;
+            position: absolute;
+            width: auto;
+            height: auto;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="form">
+        <h1>Registration Form</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+
+        <input type="radio" name="is_individual" value="1" id="individual_radio" checked> Individual
+        <input type="radio" name="is_individual" value="0" id="team_radio"> Team
+        <br>
+
+        <div id="team-size" style="display:none;">
+            <label for="team_size">Team Size:</label>
+            <select name="team_size" id="team_size_select">
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+            </select>
+            <br>
+            <h2>Team Members (excluding yourself)</h2>
+            <div id="team-members"></div>
+        </div>
+
+        <div id="submit-button">
+            <input type="submit" value="Submit">
+        </div>
+    </form>
+    </div>
+
+    <script>
+        document.getElementById('team_radio').addEventListener('click', function() {
+            document.getElementById('team-size').style.display = 'block';
+            updateTeamMembers();
+        });
+
+        document.getElementById('individual_radio').addEventListener('click', function() {
+            document.getElementById('team-size').style.display = 'none';
+        });
+
+        document.getElementById('team_size_select').addEventListener('change', function() {
+            updateTeamMembers();
+        });
+
+        function updateTeamMembers() {
+    const teamSize = parseInt(document.getElementById('team_size_select').value);
+    const teamMembersDiv = document.getElementById('team-members');
+    teamMembersDiv.innerHTML = '' +
+        '<h3> Team Name </h3><input type="text" name="team_name" required>';
+
+    for (let i = 0; i < teamSize - 1; i++) {
+        const memberNumber = i + 1;
+        const memberDiv = document.createElement('div');
+        memberDiv.innerHTML = `
+            <h3>Team Member ${memberNumber}</h3>
+            <label for="team_member_first_name_${i}">First Name:</label>
+            <input type="text" name="team_member_first_name_${i}"><br>
+            <label for="team_member_last_name_${i}">Last Name:</label>
+            <input type="text" name="team_member_last_name_${i}"><br>
+            <label for="team_member_date_of_birth_${i}">Date of Birth:</label>
+            <input type="date" name="team_member_date_of_birth_${i}"><br>
+            <label for="team_member_email_${i}">Email:</label>
+            <input type="email" name="team_member_email_${i}"><br>
+            <label for="team_member_mobile_${i}">Mobile:</label>
+            <input type="text" name="team_member_mobile_${i}"><br>
+            <label for="team_member_state_${i}">State:</label>
+            <input type="text" name="team_member_state_${i}"><br>
+            <label for="team_member_college_${i}">College:</label>
+            <input type="text" name="team_member_college_${i}"><br>
+            <label for="team_member_aadhar_${i}">Aadhar:</label>
+            <input type="text" name="team_member_aadhar_${i}"><br>
+        `;
+
+        // Set the 'required' attribute for each input element
+        const inputElements = memberDiv.querySelectorAll('input');
+        inputElements.forEach(input => {
+            input.setAttribute('required', 'true');
+        });
+
+        teamMembersDiv.appendChild(memberDiv);
+    }
+}
+
+    </script>
+</body>
+</html>
