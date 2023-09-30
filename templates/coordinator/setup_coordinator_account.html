@@ -66,14 +66,139 @@
         <h2>Coordinator Account Setup</h2>
         <form method="post">
             <input type="text" value="{{ email }}" disabled>
-            <label>Username (For Login)</label>
-            <input type="text"  name="username">
+
+
             {% csrf_token %}
-            {{ form.as_p }}
+                        <label>Username (For Login)</label>
+            <input type="text"  name="username" id="id_username">
+            <div class="username-feedback invalid-feedback" style="display: none">
+        <p></p>
+</div>
+            <p class="text-sm text-success username-valid-out"></p>
+            <div class="form-group">
+<div class="form-group">
+    <label for="mobile">Mobile</label>
+    {{ form.mobile }}
+    <div class="mobile-feedback invalid-feedback" style="display: none">
+        <p></p>
+    </div>
+</div>
+<p class="text-sm text-success mobile-valid-out"></p>
+        <div class="form-group">
+        <label for="first_name">First Name</label>
+    {{ form.first_name }}
+    </div>
+        <div class="form-group">
+        <label for="last_name">Last Name</label>
+    {{ form.last_name }}
+        </div>
+            <div class="form-group">
+        <label for="date_of_birth">Date of Birth</label>
+    {{ form.date_of_birth }}
+            </div>
+                <div class="form-group">
+        <label for="college">College</label>
+    {{ form.college }}
+                </div>
+                    <div class="form-group">
+        <label for="state">State</label>
+    {{ form.state }}
+                    </div>
+        <div class="form-group">
+        <label for="aadhar">Aadhar</label>
+    {{ form.aadhar }}
+        </div>
+            </div>
             <div class="form-group">
                 <button type="submit" class="btn">Sign Up</button>
             </div>
         </form>
     </div>
+    <script>
+    const mobileField = document.getElementById('id_mobile');
+    const mobileValidOut = document.querySelector('.mobile-valid-out');
+    const mobileFeedbackField = document.querySelector('.mobile-feedback');
+
+    mobileField.addEventListener('keyup', (e) => {
+    mobileValue = e.target.value;
+    mobileValidOut.style.display = 'block';
+    mobileField.classList.remove('is-invalid');
+    mobileFeedbackField.style.display = 'none';
+
+    if (mobileValue.length > 0) {
+        mobileValidOut.textContent = `Checking Mobile ${mobileValue}`;
+        fetch('mobile-validate/', {
+            body: JSON.stringify({ mobile: mobileValue }),
+            method: "POST",
+            credentials: "same-origin",
+            headers: {
+                "X-CSRFToken": getCookie("csrftoken"),
+                "Accept": "application/json",
+                "Content-Type": "application/json"
+            },
+        })
+        .then((res) => res.json())
+        .then(data => {
+            mobileValidOut.style.display = 'none';
+            if (data.mobile_error) {
+                mobileField.classList.add('is-invalid');
+                mobileFeedbackField.style.display = 'block';
+                mobileFeedbackField.innerHTML = `<p>${data.mobile_error}</p>`;
+            }
+        });
+    }
+});
+
+    const usernameField = document.getElementById('id_username');
+    const usernameValidOut = document.querySelector('.username-valid-out');
+    const usernameFeedbackField = document.querySelector('.username-feedback');
+
+    usernameField.addEventListener('keyup', (e) => {
+    username = e.target.value;
+    usernameValidOut.style.display = 'block';
+    usernameField.classList.remove('is-invalid');
+    usernameFeedbackField.style.display = 'none';
+
+    if (username.length > 0) {
+        usernameValidOut.textContent = `Checking Username  ${username}`;
+        fetch('username-validate/', {
+            body: JSON.stringify({ username: username }),
+            method: "POST",
+            credentials: "same-origin",
+            headers: {
+                "X-CSRFToken": getCookie("csrftoken"),
+                "Accept": "application/json",
+                "Content-Type": "application/json"
+            },
+        })
+        .then((res) => res.json())
+        .then(data => {
+            usernameValidOut.style.display = 'none';
+            if (data.username_error) {
+                usernameField.classList.add('is-invalid');
+                usernameFeedbackField.style.display = 'block';
+                usernameFeedbackField.innerHTML = `<p>${data.username_error}</p>`;
+            }
+        });
+    }
+});
+
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = cookies[i].trim();
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+    </script>
+
 </body>
 </html>

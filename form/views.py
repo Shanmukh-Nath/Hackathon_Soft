@@ -12,8 +12,9 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
 from django.db import IntegrityError
 
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode, int_to_base36
 from django.views import View
@@ -56,56 +57,67 @@ def send_invitations(request):
     return redirect('superuser_dashboard')  # Redirect to a success page
 
 
+
+def setup_coordinator_account(request):
+    uid = request.GET.get('uid')
+    if uid is not None:
+        coordinator = Coordinator.objects.get(pk=uid)
+        if request.method == 'POST':
+            form = CoordinatorForm(request.POST)
+            if form.is_valid():
+                email = coordinator.email
+                username = request.POST['username']
+                first_name = request.POST['first_name']
+                last_name = request.POST['last_name']
+                password = request.POST['password']
+                date_of_birth = request.POST['date_of_birth']
+                mobile = request.POST['mobile']
+                state = request.POST['state']
+                college = request.POST['college']
+                aadhar = request.POST['aadhar']
+                hash = make_password(password)
+
+                # Create a User object for authentication
+                user = User.objects.create_user(username=username, email=email)
+                user.set_password(password)
+                user.last_name = last_name
+                user.save()
+
+                # Update the Coordinator object with additional details
+                coordinator.first_name = first_name
+                coordinator.date_of_birth = date_of_birth
+                coordinator.mobile = mobile
+                coordinator.state = state
+                coordinator.college = college
+                coordinator.aadhar = aadhar
+                coordinator.is_setup_complete = True
+                coordinator.is_used = True
+                coordinator.save()
+
+                return redirect('coordinator_login')
+        else:
+            form = CoordinatorForm()
+            em = coordinator.email
+            return render(request, 'coordinator/setup_coordinator_account.html', {'form': form, 'email': em})
 # views.py
 
-def setup_coordinator_account(request, uidb64, token):
+def link_coordinator_validation(request, uidb64, token):
     try:
         uid = urlsafe_base64_decode(uidb64)
         coordinator = Coordinator.objects.get(pk=uid)
+        u = int(uid)
 
         is_valid_token = complex_token_generator.check_token(coordinator, token)
 
         if is_valid_token and coordinator.is_used == False:
-            if request.method == 'POST':
-                form = CoordinatorForm(request.POST)
-                if form.is_valid():
-                    email = coordinator.email
-                    username = request.POST['username']
-                    first_name = request.POST['first_name']
-                    last_name = request.POST['last_name']
-                    password = request.POST['password']
-                    date_of_birth = request.POST['date_of_birth']
-                    mobile = request.POST['mobile']
-                    state = request.POST['state']
-                    college = request.POST['college']
-                    aadhar = request.POST['aadhar']
-                    hash = make_password(password)
+            redirect_url = reverse('setup_coordinator_account') + f'?uid={u}'
+            return HttpResponseRedirect(redirect_url)
+        else:
+            return redirect("invalid_activation_link")
 
-                    # Create a User object for authentication
-                    user = User.objects.create_user(username=username, email=email)
-                    user.set_password(password)
-                    user.last_name = last_name
-                    user.save()
-
-                    # Update the Coordinator object with additional details
-                    coordinator.first_name = first_name
-                    coordinator.date_of_birth = date_of_birth
-                    coordinator.mobile = mobile
-                    coordinator.state = state
-                    coordinator.college = college
-                    coordinator.aadhar = aadhar
-                    coordinator.is_setup_complete = True
-                    coordinator.is_used = True
-                    coordinator.save()
-
-                    return redirect('coordinator_login')
-            else:
-                form = CoordinatorForm()
-                em = coordinator.email
-                return render(request, 'coordinator/setup_coordinator_account.html', {'form': form, 'email': em})
     except (TypeError, ValueError, OverflowError, Coordinator.DoesNotExist):
         print("Error")
-    return redirect("invalid_activation_link")
+
 
 
 def coordinator_login(request):
@@ -420,6 +432,28 @@ class TeamNameValidation(View):
             return JsonResponse({'team_name_error': 'Team Name already taken'}, status=400)
 
         return JsonResponse({'team_name_valid': True})
+
+class CoordinatorMobileValidation(View):
+    def post(self, request):
+        data = json.loads(request.body)
+        mobile = data['mobile']
+
+        if Coordinator.objects.filter(mobile=mobile).exists():
+                return JsonResponse({'mobile_error': 'Mobile is already registered'}, status=409)
+
+        return JsonResponse({'mobile_valid': True})  # Modify this as per your validation logic
+
+class CoordinatorUsernameValidation(View):
+    def post(self, request):
+        print("here")
+        data = json.loads(request.body)
+        mobile = data['username']
+
+        if User.objects.filter(username=mobile).exists():
+                return JsonResponse({'username_error': 'Username is already registered'}, status=409)
+
+        return JsonResponse({'username_valid': True})  # Modify this as per your validation logic
+
 
 def success(request):
     return render(request, 'reg.html')

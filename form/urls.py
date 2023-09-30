@@ -21,7 +21,10 @@ urlpatterns = [
     path('superuser/delete_coordinator/<int:coordinator_id>',views.delete_coordinator_super,name='delete_coordinator_super'),
 
     #Coordinator URLs
-    path('setup/<str:uidb64>/<str:token>/', views.setup_coordinator_account, name='setup_coordinator_account'),
+    path('setup/<str:uidb64>/<str:token>/', views.link_coordinator_validation, name='link_coordinator_validation'),
+    path('coordinator/',views.setup_coordinator_account,name='setup_coordinator_account'),
+    path('coordinator/mobile-validate/',views.CoordinatorMobileValidation.as_view(),name='coordinator_mobile_validate'),
+    path('coordinator/username-validate/', views.CoordinatorUsernameValidation.as_view(),name='coordinator_username_validate'),
     path('invalid_activation_link/', views.invalid_activation_link, name='invalid_activation_link'),
     path('coordinator/login/',views.coordinator_login,name='coordinator_login'),
     path('coordinator/dashboard/',views.coordinator_dashboard,name='coordinator_dashboard'),
