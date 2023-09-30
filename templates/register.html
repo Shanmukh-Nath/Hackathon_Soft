@@ -26,7 +26,51 @@
         <h1>Registration Form</h1>
     <form method="post">
         {% csrf_token %}
-        {{ form.as_p }}
+        <div class="form-group">
+    <label for="email">Email</label>
+    {{ form.email }}
+    <div class="email-feedback invalid-feedback" style="display: none">
+        <p></p>
+    </div>
+</div>
+<p class="text-sm text-success email-valid-out"></p>
+
+<div class="form-group">
+    <label for="mobile">Mobile</label>
+    {{ form.mobile }}
+    <div class="mobile-feedback invalid-feedback" style="display: none">
+        <p></p>
+    </div>
+</div>
+<p class="text-sm text-success mobile-valid-out"></p>
+        <div class="form-group">
+        <label for="first_name">First Name</label>
+    {{ form.first_name }}
+    </div>
+        <div class="form-group">
+        <label for="last_name">Last Name</label>
+    {{ form.last_name }}
+        </div>
+            <div class="form-group">
+        <label for="date_of_birth">Date of Birth</label>
+    {{ form.date_of_birth }}
+            </div>
+                <div class="form-group">
+        <label for="college">College</label>
+    {{ form.college }}
+                </div>
+                    <div class="form-group">
+        <label for="state">State</label>
+    {{ form.state }}
+                    </div>
+        <div class="form-group">
+        <label for="aadhar">Aadhar</label>
+    {{ form.aadhar }}
+        </div>
+        <div class="form-group">
+        <label for="domain_of_interest">Domain</label>
+    {{ form.domain_of_interest }}
+        </div>
 
         <input type="radio" name="is_individual" value="1" id="individual_radio" checked> Individual
         <input type="radio" name="is_individual" value="0" id="team_radio"> Team
@@ -64,11 +108,122 @@
             updateTeamMembers();
         });
 
+            function setupEmailValidation(emailField, emailValidOut, emailFeedbackField) {
+        emailField.addEventListener('keyup', (e) => {
+            const emailValue = e.target.value;
+            emailValidOut.style.display = 'block';
+            emailField.classList.remove('is-invalid');
+            emailFeedbackField.style.display = 'none';
+
+            if (emailValue.length > 0) {
+                emailValidOut.textContent = `Checking Email ${emailValue}`;
+                fetch('email-validate/', {
+                    body: JSON.stringify({ email: emailValue }),
+                    method: "POST",
+                    credentials: "same-origin",
+                    headers: {
+                        "X-CSRFToken": getCookie("csrftoken"),
+                        "Accept": "application/json",
+                        "Content-Type": "application/json"
+                    },
+                })
+                .then((res) => res.json())
+                .then(data => {
+                    emailValidOut.style.display = 'none';
+                    if (data.email_error) {
+                        emailField.classList.add('is-invalid');
+                        emailFeedbackField.style.display = 'block';
+                        emailFeedbackField.innerHTML = `<p>${data.email_error}</p>`;
+                    }
+                });
+            }
+        });
+    }
+
+    // Mobile Validation
+    function setupMobileValidation(mobileField, mobileValidOut, mobileFeedbackField) {
+        mobileField.addEventListener('keyup', (e) => {
+            const mobileValue = e.target.value;
+            mobileValidOut.style.display = 'block';
+            mobileField.classList.remove('is-invalid');
+            mobileFeedbackField.style.display = 'none';
+
+            if (mobileValue.length > 0) {
+                mobileValidOut.textContent = `Checking Mobile ${mobileValue}`;
+                fetch('mobile-validate/', {
+                    body: JSON.stringify({ mobile: mobileValue }),
+                    method: "POST",
+                    credentials: "same-origin",
+                    headers: {
+                        "X-CSRFToken": getCookie("csrftoken"),
+                        "Accept": "application/json",
+                        "Content-Type": "application/json"
+                    },
+                })
+                .then((res) => res.json())
+                .then(data => {
+                    mobileValidOut.style.display = 'none';
+                    if (data.mobile_error) {
+                        mobileField.classList.add('is-invalid');
+                        mobileFeedbackField.style.display = 'block';
+                        mobileFeedbackField.innerHTML = `<p>${data.mobile_error}</p>`;
+                    }
+                });
+            }
+        });
+    }
+
+
+
+
+
         function updateTeamMembers() {
     const teamSize = parseInt(document.getElementById('team_size_select').value);
     const teamMembersDiv = document.getElementById('team-members');
-    teamMembersDiv.innerHTML = '' +
-        '<h3> Team Name </h3><input type="text" name="team_name" required>';
+    teamMembersDiv.innerHTML = `
+    <h3> Team Name </h3>
+    <input type="text" name="team_name" id="team_name" required>
+    <!-- Team name validation feedback -->
+    <div class="team-name-feedback invalid-feedback" style="display: none;">
+        <p></p>
+    </div>
+    <!-- Team name validation success message -->
+    <p class="text-sm text-success team-name-valid-out"></p>
+`;
+    const teamNameField = document.getElementById('team_name');
+const teamNameValidOut = document.querySelector('.team-name-valid-out');
+const teamNameFeedbackField = document.querySelector('.team-name-feedback');
+
+teamNameField.addEventListener('keyup', (e) => {
+    const teamNameValue = e.target.value;
+    teamNameValidOut.style.display = 'block';
+    teamNameField.classList.remove('is-invalid');
+    teamNameFeedbackField.style.display = 'none';
+
+    if (teamNameValue.length > 0) {
+        teamNameValidOut.textContent = `Checking Team Name: ${teamNameValue}`;
+        fetch('team-name-validate/', {
+            body: JSON.stringify({ team_name: teamNameValue }),
+            method: "POST",
+            credentials: "same-origin",
+            headers: {
+                "X-CSRFToken": getCookie("csrftoken"),
+                "Accept": "application/json",
+                "Content-Type": "application/json"
+            },
+        })
+        .then((res) => res.json())
+        .then(data => {
+            teamNameValidOut.style.display = 'none';
+            if (data.team_name_error) {
+                teamNameField.classList.add('is-invalid');
+                teamNameFeedbackField.style.display = 'block';
+                teamNameFeedbackField.innerHTML = `<p>${data.team_name_error}</p>`;
+            }
+        });
+    }
+});
+
 
     for (let i = 0; i < teamSize - 1; i++) {
         const memberNumber = i + 1;
@@ -82,9 +237,17 @@
             <label for="team_member_date_of_birth_${i}">Date of Birth:</label>
             <input type="date" name="team_member_date_of_birth_${i}"><br>
             <label for="team_member_email_${i}">Email:</label>
-            <input type="email" name="team_member_email_${i}"><br>
+            <input type="email" name="team_member_email_${i}">
+            <div class="email-feedback invalid-feedback" style="display: none">
+                    <p></p>
+            </div>
+            <p class="text-sm text-success email-valid-out"></p><br>
             <label for="team_member_mobile_${i}">Mobile:</label>
-            <input type="text" name="team_member_mobile_${i}"><br>
+            <input type="text" name="team_member_mobile_${i}">
+            <div class="mobile-feedback invalid-feedback" style="display: none">
+                    <p></p>
+            </div>
+            <p class="text-sm text-success mobile-valid-out"></p><br>
             <label for="team_member_state_${i}">State:</label>
             <input type="text" name="team_member_state_${i}"><br>
             <label for="team_member_college_${i}">College:</label>
@@ -98,11 +261,118 @@
         inputElements.forEach(input => {
             input.setAttribute('required', 'true');
         });
+                // Get the newly added email and mobile fields
+        const newEmailField = memberDiv.querySelector(`input[name="team_member_email_${i}"]`);
+        const newMobileField = memberDiv.querySelector(`input[name="team_member_mobile_${i}"]`);
+
+        // Select email and mobile validation output elements
+        const newEmailValidOut = memberDiv.querySelector('.email-valid-out');
+        const newMobileValidOut = memberDiv.querySelector('.mobile-valid-out');
+
+        // Select email and mobile feedback fields
+        const newEmailFeedbackField = memberDiv.querySelector('.email-feedback');
+        const newMobileFeedbackField = memberDiv.querySelector('.mobile-feedback');
+
+        // Setup email validation for the new email field
+        setupEmailValidation(newEmailField, newEmailValidOut, newEmailFeedbackField);
+
+        // Setup mobile validation for the new mobile field
+        setupMobileValidation(newMobileField, newMobileValidOut, newMobileFeedbackField);
 
         teamMembersDiv.appendChild(memberDiv);
     }
 }
 
+    </script>
+    <script>
+        // Email Validation
+        const emailField = document.getElementById('id_email');
+const mobileField = document.getElementById('id_mobile');
+
+// Select email and mobile validation output elements
+const emailValidOut = document.querySelector('.email-valid-out');
+const mobileValidOut = document.querySelector('.mobile-valid-out');
+
+// Select email and mobile feedback fields
+const emailFeedbackField = document.querySelector('.email-feedback');
+const mobileFeedbackField = document.querySelector('.mobile-feedback');
+
+emailField.addEventListener('keyup', (e) => {
+    emailValue = e.target.value;
+    emailValidOut.style.display = 'block';
+    emailField.classList.remove('is-invalid');
+    emailFeedbackField.style.display = 'none';
+
+    if (emailValue.length > 0) {
+        emailValidOut.textContent = `Checking Email ${emailValue}`;
+        fetch('email-validate/', {
+            body: JSON.stringify({ email: emailValue }),
+            method: "POST",
+            credentials: "same-origin",
+            headers: {
+                "X-CSRFToken": getCookie("csrftoken"),
+                "Accept": "application/json",
+                "Content-Type": "application/json"
+            },
+        })
+        .then((res) => res.json())
+        .then(data => {
+            emailValidOut.style.display = 'none';
+            if (data.email_error) {
+                emailField.classList.add('is-invalid');
+                emailFeedbackField.style.display = 'block';
+                emailFeedbackField.innerHTML = `<p>${data.email_error}</p>`;
+            }
+        });
+    }
+});
+
+// Mobile Validation
+mobileField.addEventListener('keyup', (e) => {
+    mobileValue = e.target.value;
+    mobileValidOut.style.display = 'block';
+    mobileField.classList.remove('is-invalid');
+    mobileFeedbackField.style.display = 'none';
+
+    if (mobileValue.length > 0) {
+        mobileValidOut.textContent = `Checking Mobile ${mobileValue}`;
+        fetch('mobile-validate/', {
+            body: JSON.stringify({ mobile: mobileValue }),
+            method: "POST",
+            credentials: "same-origin",
+            headers: {
+                "X-CSRFToken": getCookie("csrftoken"),
+                "Accept": "application/json",
+                "Content-Type": "application/json"
+            },
+        })
+        .then((res) => res.json())
+        .then(data => {
+            mobileValidOut.style.display = 'none';
+            if (data.mobile_error) {
+                mobileField.classList.add('is-invalid');
+                mobileFeedbackField.style.display = 'block';
+                mobileFeedbackField.innerHTML = `<p>${data.mobile_error}</p>`;
+            }
+        });
+    }
+});
+
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = cookies[i].trim();
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
     </script>
 </body>
 </html>

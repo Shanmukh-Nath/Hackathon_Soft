@@ -3,6 +3,9 @@ from . import views
 
 urlpatterns = [
     path('register/', views.registration, name='registration'),
+    path('register/email-validate/', views.EmailValidation.as_view(), name="email-validate"),
+    path('register/mobile-validate/', views.MobileValidation.as_view(), name="mobile-validate"),
+    path('register/team-name-validate/', views.TeamNameValidation.as_view(), name='team-name-validate'),
     path('success/', views.success, name='success'),
     path('logout/',views.logout,name='logout'),
     #SuperUser URLs

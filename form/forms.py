@@ -15,6 +15,8 @@ class CoordinatorForm(forms.ModelForm):
         self.fields.pop('is_setup_complete')
         self.fields.pop('email')
         self.fields.pop('is_used')
+        self.fields.pop('last_login')
+        self.fields.pop('edited_by')
         self.fields['date_of_birth'].widget = forms.widgets.DateInput(
             attrs={
                 'type': 'date', 'placeholder': 'yyy-mm-dd (DOB) ', 'value':' ',
@@ -51,6 +53,7 @@ class SuperCoordinatorForm(forms.ModelForm):
 class RegistrationForm(forms.ModelForm):
     def __init__(self,*args):
         super().__init__(*args)
+        self.fields.pop('edited_by')
         self.fields['date_of_birth'].widget = forms.widgets.DateInput(
             attrs={
                 'type':'date','placeholder':'yyy-mm-dd (DOB) ',

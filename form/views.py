@@ -1,14 +1,18 @@
 import csv
 import datetime
+import json
 
-from django.contrib import messages
+from django.contrib import messages, auth
 from django.contrib.auth import login, authenticate, get_user_model
 from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.hashers import make_password,check_password
+from django.contrib.auth.hashers import make_password, check_password
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
+from django.db import IntegrityError
+
+from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode, int_to_base36
@@ -18,7 +22,7 @@ from django.contrib.auth.models import User
 from .tokens import complex_token_generator
 from .forms import RegistrationForm, SuperuserLoginForm, SuperCoordinatorForm, CoordinatorForm, CoordinatorEditForm, \
     ParticipantEditForm
-from .models import Participant, Team, Domain,Coordinator
+from .models import Participant, Team, Domain, Coordinator, UserProfile
 
 
 def send_invitations(request):
@@ -29,7 +33,6 @@ def send_invitations(request):
             # Generate a unique token for each coordinator
             uid = urlsafe_base64_encode(force_bytes(coordinator.pk))
             token = complex_token_generator.make_token(coordinator)
-
 
             # Build the account setup link
             current_site = get_current_site(request)
@@ -50,23 +53,24 @@ def send_invitations(request):
             coordinator.is_invited = True
             coordinator.save()
 
-    return redirect('superuser_dashboard') # Redirect to a success page
+    return redirect('superuser_dashboard')  # Redirect to a success page
+
 
 # views.py
 
-def setup_coordinator_account(request,uidb64,token):
+def setup_coordinator_account(request, uidb64, token):
     try:
         uid = urlsafe_base64_decode(uidb64)
         coordinator = Coordinator.objects.get(pk=uid)
 
-        is_valid_token = complex_token_generator.check_token(coordinator,token)
+        is_valid_token = complex_token_generator.check_token(coordinator, token)
 
         if is_valid_token and coordinator.is_used == False:
             if request.method == 'POST':
                 form = CoordinatorForm(request.POST)
                 if form.is_valid():
                     email = coordinator.email
-                    username= request.POST['username']
+                    username = request.POST['username']
                     first_name = request.POST['first_name']
                     last_name = request.POST['last_name']
                     password = request.POST['password']
@@ -98,46 +102,60 @@ def setup_coordinator_account(request,uidb64,token):
             else:
                 form = CoordinatorForm()
                 em = coordinator.email
-                return render(request,'coordinator/setup_coordinator_account.html',{'form':form,'email':em})
+                return render(request, 'coordinator/setup_coordinator_account.html', {'form': form, 'email': em})
     except (TypeError, ValueError, OverflowError, Coordinator.DoesNotExist):
-                print("Error")
+        print("Error")
     return redirect("invalid_activation_link")
 
 
-
 def coordinator_login(request):
-    #send_invitations(request)
-    if request.method == 'POST':
-        username = request.POST['username']
-        password = request.POST['password']
-        print(f"Username: {username}")
-        print(f"Password: {password}")
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            user.session_key = request.session.session_key
-            user.save()
-            login(request, user)
+    if request.user.is_authenticated:
+        if request.user.is_active:
             return redirect('coordinator_dashboard')
-        else:
-            print("invalid")
-            messages.error(request, 'Invalid credentials. Please try again.')
+    else:
+        if request.method == 'POST':
+            username = request.POST['username']
+            password = request.POST['password']
+            user = auth.authenticate(request, username=username, password=password)
+            if user is not None:
+                user.session_key = request.session.session_key
+                user.save()
+                auth.login(request, user)
+                if user is not None and user.is_active:
+                    user.session_key = request.session.session_key
+                    user.save()
+                    auth.login(request, user)
+                    user_profile = UserProfile.objects.get_or_create(user_id=request.user.id)
+                    if user_profile[0].is_logged_in:
+                        messages.error(request, "You are already logged in.")
+                        auth.logout(request)
+                        return redirect('coordinator_login')
+                    else:
+                        user_profile[0].is_logged_in = True
+                        user_profile[0].current_session_id = request.session.session_key
+                        user_profile[0].save()
+                        return redirect('coordinator_dashboard')
+            else:
+                print("invalid")
+                messages.error(request, 'Invalid credentials. Please try again.')
 
     return render(request, 'coordinator/coordinator_login.html')
+
 
 @login_required(login_url='/superuser/login/')
 def view_coordinators(request):
     coordinators = Coordinator.objects.all()
-    return render(request,'superuser/coordinators_list.html',{'coordinators':coordinators})
-
+    return render(request, 'superuser/coordinators_list.html', {'coordinators': coordinators})
 
 
 @login_required(login_url='/superuser/login/')
 def view_participants_super(request):
     coordinators = Participant.objects.all()
-    return render(request,'superuser/participants_list.html',{'coordinators':coordinators})
+    return render(request, 'superuser/participants_list.html', {'coordinators': coordinators})
+
 
 @login_required(login_url='/superuser/login/')
-def edit_participant_super(request,participant_id):
+def edit_participant_super(request, participant_id):
     participant = Participant.objects.get(pk=participant_id)
 
     if request.method == 'POST':
@@ -153,7 +171,7 @@ def edit_participant_super(request,participant_id):
 
 
 @login_required(login_url='/coordinator/login/')
-def edit_participant_coordinator(request,participant_id):
+def edit_participant_coordinator(request, participant_id):
     participant = Participant.objects.get(pk=participant_id)
 
     if request.method == 'POST':
@@ -166,18 +184,32 @@ def edit_participant_coordinator(request,participant_id):
         form = ParticipantEditForm(instance=participant)
 
     return render(request, 'coordinator/edit_participant.html', {'form': form})
+
+
 @login_required(login_url='/coordinator/login')
 def view_participants_coordinator(request):
     coordinators = Participant.objects.all()
-    return render(request,'coordinator/participants_list.html',{'coordinators':coordinators})
+    return render(request, 'coordinator/participants_list.html', {'coordinators': coordinators})
+
+
 @login_required(login_url='/coordinator/login/')
 def coordinator_dashboard(request):
-    coordinators = Participant.objects.all()
-    l = len(coordinators)
-    return render(request, "coordinator/coordinator_dashboard.html", {"length": l})
+    if request.user.is_active:
+        cur = request.session.session_key
+        user_profile = UserProfile.objects.get(user_id=request.user.id)
+        if not user_profile.current_session_id == cur:
+            print("here")
+            auth.logout(request)
+            messages.error(request, "you are already logged in.")
+            return redirect('coordinator_login')
+        else:
+            coordinators = Participant.objects.all()
+            l = len(coordinators)
+            return render(request, "coordinator/coordinator_dashboard.html", {"length": l})
+
 
 @login_required(login_url='/superuser/login/')
-def edit_coordinator(request,coordinator_id):
+def edit_coordinator(request, coordinator_id):
     coordinator = Coordinator.objects.get(pk=coordinator_id)
 
     if request.method == 'POST':
@@ -194,34 +226,60 @@ def edit_coordinator(request,coordinator_id):
 
 def logout(request):
     if request.user.is_superuser:
+        user_profile = UserProfile.objects.get(user_id=request.user.id)
+        user_profile.is_logged_in = False
+        user_profile.current_session_id = False
+        user_profile.save()
         request.session.flush()
         return redirect('superuser_login')
     else:
-        return redirect('coordinator_dashboard')
+        user_profile = UserProfile.objects.get(user_id=request.user.id)
+        user_profile.is_logged_in = False
+        user_profile.current_session_id = False
+        user_profile.save()
+        request.session.flush()
+        return redirect('coordinator_login')
 
 
 def invalid_activation_link(request):
-    return render(request,'coordinator/invalid_token.html')
+    return render(request, 'coordinator/invalid_token.html')
+
+
 def force_text(param):
     pass
 
 
-
 def superuser_login(request):
-    #send_invitations(request)
-    if request.method == 'POST':
-        username = request.POST['username']
-        password = request.POST['password']
-        user = authenticate(request, username=username, password=password)
-        if user is not None and user.is_superuser:
-            user.session_key = request.session.session_key
-            user.save()
-            login(request, user)
+    if request.user.is_authenticated:
+        if request.user.is_superuser:
             return redirect('superuser_dashboard')
         else:
-            messages.error(request, 'Invalid credentials. Please try again.')
+            messages.error(request, "You are not authorized.")
+            return redirect('coordinator_login')
+    else:
+        if request.method == 'POST':
+            username = request.POST['username']
+            password = request.POST['password']
+            user = auth.authenticate(request, username=username, password=password)
+            if user is not None and user.is_superuser:
+                user.session_key = request.session.session_key
+                user.save()
+                auth.login(request, user)
+                user_profile = UserProfile.objects.get_or_create(user_id=request.user.id)
+                if user_profile[0].is_logged_in:
+                    messages.error(request,"You are already logged in.")
+                    auth.logout(request)
+                    return redirect('superuser_login')
+                else:
+                    user_profile[0].is_logged_in = True
+                    user_profile[0].current_session_id = request.session.session_key
+                    user_profile[0].save()
+                    return redirect('superuser_dashboard')
+            else:
+                messages.error(request, 'Invalid credentials. Please try again.')
 
     return render(request, 'superuser/superuser_login.html')
+
 
 @login_required(login_url='/superuser/login/')
 def send_invite(request):
@@ -230,28 +288,37 @@ def send_invite(request):
     for c in coordinators:
         if c.is_invited == False:
             cd.append(c.email)
-    return render(request,'superuser/send_invite.html',{'emails':cd})
+    return render(request, 'superuser/send_invite.html', {'emails': cd})
+
 
 @login_required(login_url='/superuser/login/')
 def superuser_dashboard(request):
     if request.user.is_superuser:
-        coordinators = Coordinator.objects.all()
-        l = len(coordinators)
-        return render(request, "superuser/superuser_dashboard.html", {"length": l})
+        cur = request.session.session_key
+        user_profile = UserProfile.objects.get(user_id=request.user.id)
+        if user_profile.current_session_id != cur:
+            auth.logout(request)
+            messages.error(request,"you are already logged in.")
+            return redirect('superuser_login')
+        else:
+            coordinators = Coordinator.objects.all()
+            l = len(coordinators)
+            return render(request, "superuser/superuser_dashboard.html", {"length": l})
     else:
         return redirect('coordinator_login')
 
 
 @login_required(login_url='/superuser/login/')
-def delete_coordinator_super(request,coordinator_id):
-        coor = Coordinator.objects.get(pk=coordinator_id)
-        email = coor.email
-        if coor.is_setup_complete:
-            user = User.objects.get(email=email)
-            user.delete()
-        coor.delete()
-        messages.warning(request,f"User '{email}' has been deleted successfully.")
-        return redirect('superuser_dashboard')
+def delete_coordinator_super(request, coordinator_id):
+    coor = Coordinator.objects.get(pk=coordinator_id)
+    email = coor.email
+    if coor.is_setup_complete:
+        user = User.objects.get(email=email)
+        user.delete()
+    coor.delete()
+    messages.warning(request, f"User '{email}' has been deleted successfully.")
+    return redirect('superuser_dashboard')
+
 
 @login_required(login_url='/superuser/login/')
 def add_coordinator(request):
@@ -264,8 +331,6 @@ def add_coordinator(request):
     else:
         form = SuperCoordinatorForm()
     return render(request, "superuser/add_coordinator.html", {"form": form})
-
-
 
 
 def registration(request):
@@ -323,6 +388,38 @@ def registration(request):
     else:
         form = RegistrationForm()
     return render(request, 'register.html', {'form': form})
+
+
+class EmailValidation(View):
+    def post(self, request):
+        data = json.loads(request.body)
+        email = data['email']
+
+        if Participant.objects.filter(email=email).exists():
+            return JsonResponse({'email_error': 'Email is already registered'}, status=409)
+
+        return JsonResponse({'email_valid': True})
+
+class MobileValidation(View):
+    def post(self, request):
+        data = json.loads(request.body)
+        mobile = data['mobile']
+
+        if Participant.objects.filter(mobile=mobile).exists():
+            return JsonResponse({'mobile_error': 'Mobile is already registered'}, status=409)
+
+        return JsonResponse({'mobile_valid': True})  # Modify this as per your validation logic
+
+class TeamNameValidation(View):
+    def post(self, request):
+        data = json.loads(request.body)
+        team_name = data['team_name']
+
+
+        if Team.objects.filter(team_name=team_name).exists():
+            return JsonResponse({'team_name_error': 'Team Name already taken'}, status=400)
+
+        return JsonResponse({'team_name_valid': True})
 
 def success(request):
     return render(request, 'reg.html')

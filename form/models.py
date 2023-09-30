@@ -59,8 +59,8 @@ class Participant(models.Model):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     date_of_birth = models.CharField(max_length=100)
-    email = models.EmailField()
-    mobile = models.CharField(max_length=15)
+    email = models.EmailField(unique=True)
+    mobile = models.CharField(max_length=15,unique=True)
     state = models.CharField(max_length=100)
     college = models.CharField(max_length=100)
     aadhar = models.CharField(max_length=12,default='',validators=[MinLengthValidator(12)])
@@ -72,3 +72,10 @@ class Participant(models.Model):
     def __str__(self):
         return self.first_name
 
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    is_logged_in = models.BooleanField(default=False)
+    current_session_id = models.CharField(max_length=32, null=True, blank=True,default=1)
+
+    def __str__(self):
+        return self.user.username
