@@ -16,6 +16,7 @@ from django.db import IntegrityError
 from django.http import JsonResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode, int_to_base36
 from django.views import View
@@ -147,6 +148,7 @@ def coordinator_login(request):
                     else:
                         user_profile[0].is_logged_in = True
                         user_profile[0].current_session_id = request.session.session_key
+                        user_profile[0].last_login = timezone.now()
                         user_profile[0].save()
                         return redirect('coordinator_dashboard')
             else:
@@ -218,8 +220,9 @@ def coordinator_dashboard(request):
             return redirect('coordinator_login')
         else:
             coordinators = Participant.objects.all()
+            user = request.user.username
             l = len(coordinators)
-            return render(request, "coordinator/coordinator_dashboard.html", {"length": l})
+            return render(request, "coordinator/coordinator_dashboard.html", {"length": l,'user':user})
 
 
 @login_required(login_url='/superuser/login/')
@@ -287,12 +290,42 @@ def superuser_login(request):
                 else:
                     user_profile[0].is_logged_in = True
                     user_profile[0].current_session_id = request.session.session_key
+                    user_profile[0].last_login = timezone.now()
                     user_profile[0].save()
                     return redirect('superuser_dashboard')
             else:
                 messages.error(request, 'Invalid credentials. Please try again.')
 
     return render(request, 'superuser/superuser_login.html')
+
+
+class SessionTimeoutMiddleware:
+    print("Here")
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+
+        # Check if the user is authenticated and has a UserProfile
+        if request.user.is_authenticated:
+            try:
+                print("Here")
+                user_profile = UserProfile.objects.get(user=request.user)
+
+                # Check if the session has expired (e.g., after 30 minutes)
+                session_timeout = 2600  # 30 minutes in seconds
+                last_login = user_profile.last_login
+                current_time = timezone.now()
+                if last_login and (current_time - last_login).total_seconds() > session_timeout:
+                    print((current_time-last_login).total_seconds())
+                    logout(request)
+            except UserProfile.DoesNotExist:
+                pass  # UserProfile not found, no need to check session timeout
+
+        return response
+
+
 
 
 @login_required(login_url='/superuser/login/')
@@ -315,9 +348,10 @@ def superuser_dashboard(request):
             messages.error(request,"you are already logged in.")
             return redirect('superuser_login')
         else:
-            coordinators = Coordinator.objects.all()
-            l = len(coordinators)
-            return render(request, "superuser/superuser_dashboard.html", {"length": l})
+            p = len(Participant.objects.all())
+            user = request.user.username
+            l = len(Coordinator.objects.all())
+            return render(request, "superuser/superuser_dashboard.html", {"length": l,"participant":p,"user":user})
     else:
         return redirect('coordinator_login')
 

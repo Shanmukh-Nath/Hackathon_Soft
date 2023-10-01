@@ -92,6 +92,7 @@ class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     is_logged_in = models.BooleanField(default=False)
     current_session_id = models.CharField(max_length=32, null=True, blank=True,default=1)
+    last_login = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
         return self.user.username

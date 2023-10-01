@@ -79,6 +79,9 @@
         flex-basis: 48%; /* Adjust as needed for spacing */
         padding: 5px;
     }
+    #email:hover{
+        cursor: not-allowed;
+    }
 </style>
 
 </head>
@@ -95,7 +98,7 @@
     <div class="container">
     <h2>Coordinator Account Setup</h2>
     <form method="post">
-        <input type="text" value="{{ email }}" disabled>
+        <input type="text" value="{{ email }}" disabled id="email">
         {% csrf_token %}
 
         <div class="flex-container">

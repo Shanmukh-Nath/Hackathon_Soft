@@ -1,79 +1,156 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Coordiantor Dashboard</title>
+    <title>Coordinator Dashboard</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
             margin: 0;
             padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             height: 100vh;
+            background-image: url('{% static 'img/coordinator_dash.jpg' %}');
+            background-size: cover;
+            background-position: center;
+            overflow: hidden;
         }
 
-        .container {
-            background-color: #fff;
+        .overlay {
+            position: relative;
+            width: 90%;
+            margin: 5%;
+             /* Semi-transparent white background */
+            border: 5px solid #ccc; /* Border around the overlay */
+            border-radius: 15px;
+            overflow: hidden; /* Ensure the overlay doesn't overflow */
+            height:80%
+        }
+
+.navigation {
+
+    float: left;
+    width: 25%;
+    padding: 20px;
+    box-sizing: border-box;
+    background: rgba(255, 255, 255, 0.2); /* Semi-transparent white background */
+    backdrop-filter: blur(10px); /* Apply a blur effect to create the glassmorphic effect */
+    border: 1px solid rgba(255, 255, 255, 0.2); /* Add a border for contrast */
+    border-radius: 10px;
+    overflow: hidden;
+    height: 100%;
+}
+.navigation li{
+    padding-top: 8%;
+        text-transform: uppercase;
+    list-style-type: none;
+}
+.navigation ul li a {
+    display: block;
+    color: #fff;
+    text-decoration: none;
+    padding: 10px 20px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    transition: background-color 0.3s; /* Add a smooth transition effect */
+}
+
+.navigation ul li a:hover {
+    background-color: #0056b3; /* Change the background color on hover */
+}
+.logout-button {
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    right: 0;
+    text-align: center;
+}
+
+.logout-btn {
+    background-color: #ffffff;
+    color: #000000;
+    padding: 10px 20px;
+    border: none;
+    width: 70%;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: 600;
+    transition: background-color 0.3s;
+}
+
+.logout-btn:hover {
+    background-color: #ffffcc;
+}
+
+        .content {
+            border-radius: 10px;
+            float: right;
+            width: 75%; /* 75% for content */
             padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
+            {#background-color: rgba(255, 255, 255, 0.9);#}
+            background: rgba(255, 255, 255, 0.2); /* Semi-transparent white background */
+    backdrop-filter: blur(10px); /* Apply a blur effect to create the glassmorphic effect */
+    border: 1px solid rgba(255, 255, 255, 0.2); /* Add a border for contrast */
+            height: 100%;
         }
+        .content-scroll {
+    max-height: 100%; /* Set a maximum height for the scrollable area */
+    overflow: auto; /* Add a scrollbar when content overflows */
+}
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        table, th, td {
-            border: 1px solid #ccc;
-        }
-
-        th, td {
-            padding: 10px;
-            text-align: left;
-        }
-
-        th {
-            background-color: #007BFF;
-            color: #fff;
-        }
-
-        .btn {
-            background-color: #007BFF;
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            cursor: pointer;
-        }
-
-        .btn:hover {
-            background-color: #0056b3;
+        h2 {
+            margin-top: 0;
         }
     </style>
 </head>
 <body>
-        {% if messages %}
-            {% for message in messages %}
-<div class="container-fluid p-0">
-  <div class="alert {{ message.tags }}" role="alert" >
-    {{ message }}
-  </div>
+    <div class="overlay">
+        <div class="navigation">
+    <h2>Welcome, {{ user }}</h2>
+    <ul>
+        <li>
+            <a href="#" onclick="loadContent('{% url 'view_participants_coordinator' %}')">
+                <i class="fa fa-list"></i> <!-- Font Awesome icon for 'View Participants' -->
+                View Participants
+            </a>
+        </li>
+    </ul>
+<div class="logout-button">
+            <form id="my_form" action="{% url 'logout' %}" method="POST">
+                {% csrf_token %}
+                <button class="logout-btn" type="submit">
+                    <i class="fa fa-sign-out"></i> Logout
+                </button>
+            </form>
+        </div>
 </div>
-{% endfor %}
-        {% endif %}
-    <div class="container">
-        <h2>Coordinator Dashboard</h2>
-        <h3>There are total {{ length }} Participants</h3>
-        <a href="{% url 'view_participants_coordinator' %}" class="btn">View Participants</a>
+        <div class="content" id="content">
+            <div class="content-scroll"> <!-- Add a wrapper for scrolling content -->
+        <!-- Content for the selected page will be displayed here -->
+                <h2>Dashboard</h2>
+                <p>Total {{ length }} Coordinators</p>
+        <!-- Add your page content here -->
+            </div>
+        </div>
     </div>
-    <form id="my_form" action="{% url 'logout' %}" method="POST">
-             {% csrf_token %}
-            <li><a href="javascript:{}" onclick="document.getElementById('my_form').submit();" class="btn btn-danger">Logout</a></li>
-      </form>
+
+    <script>
+        function loadContent(url) {
+            const contentDiv = document.getElementById('content');
+            const xhr = new XMLHttpRequest();
+
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    contentDiv.innerHTML = xhr.responseText;
+                }
+            };
+
+            xhr.open('GET', url, true);
+            xhr.send();
+        }
+    </script>
 </body>
 </html>
