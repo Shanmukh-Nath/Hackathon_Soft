@@ -489,6 +489,17 @@ class CoordinatorAadharValidation(View):
         return JsonResponse({'aadhar_valid': True})
 
 
+class SuperUserEmailValidation(View):
+    def post(self, request):
+        data = json.loads(request.body)
+        mobile = data['email']
+
+        if Coordinator.objects.filter(email=mobile).exists():
+                return JsonResponse({'email_error': 'Email is already registered'}, status=409)
+
+        return JsonResponse({'email_valid': True})
+
+
 def success(request):
     print(request.POST)
     return render(request, 'success.html')

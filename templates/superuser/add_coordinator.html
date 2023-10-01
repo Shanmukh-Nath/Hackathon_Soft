@@ -31,7 +31,7 @@
             font-weight: bold;
         }
 
-        input[type="text"],
+        input,
         input[type="password"] {
             width: 100%;
             padding: 10px;
@@ -66,9 +66,13 @@
         <h2>Add Coordinator</h2>
         <form method="post">
             {% csrf_token %}
-            <div class="form-group">
-                <label for="email">Email:</label>
-                <input type="text" id="email" name="email" required>
+            <div class="flex-item">
+                <label for="mobile">Email</label>
+                <input type="email" name="email" id="id_email">
+                <div class="email-feedback invalid-feedback" style="display: none">
+                    <p></p>
+                </div>
+                <p class="text-sm text-success email-valid-out"></p>
             </div>
             <div class="form-group">
                 <button type="submit" class="btn">Add Coordinator</button>
@@ -76,5 +80,44 @@
         </form>
         <a href="{% url 'superuser_dashboard' %}">Dashboard</a>
     </div>
+<script>
+            const emailField = document.getElementById('id_email');
+
+// Select email and mobile validation output elements
+const emailValidOut = document.querySelector('.email-valid-out');
+
+// Select email and mobile feedback fields
+const emailFeedbackField = document.querySelector('.email-feedback');
+
+emailField.addEventListener('keyup', (e) => {
+    emailValue = e.target.value;
+    emailValidOut.style.display = 'block';
+    emailField.classList.remove('is-invalid');
+    emailFeedbackField.style.display = 'none';
+
+    if (emailValue.length > 0) {
+        emailValidOut.textContent = `Checking Email ${emailValue}`;
+        fetch('email-validate/', {
+            body: JSON.stringify({ email: emailValue }),
+            method: "POST",
+            credentials: "same-origin",
+            headers: {
+                "X-CSRFToken": getCookie("csrftoken"),
+                "Accept": "application/json",
+                "Content-Type": "application/json"
+            },
+        })
+        .then((res) => res.json())
+        .then(data => {
+            emailValidOut.style.display = 'none';
+            if (data.email_error) {
+                emailField.classList.add('is-invalid');
+                emailFeedbackField.style.display = 'block';
+                emailFeedbackField.innerHTML = `<p>${data.email_error}</p>`;
+            }
+        });
+    }
+});
+</script>
 </body>
 </html>

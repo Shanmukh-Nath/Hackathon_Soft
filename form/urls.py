@@ -19,6 +19,7 @@ urlpatterns = [
     path('superuser/view_participants/',views.view_participants_super,name='view_participants_super'),
     path('superuser/edit_participant/<int:participant_id>',views.edit_participant_super,name='edit_participant_super'),
     path('superuser/delete_coordinator/<int:coordinator_id>',views.delete_coordinator_super,name='delete_coordinator_super'),
+    path('superuser/add_coordinator/email-validate',views.SuperUserEmailValidation.as_view(),name='superuser_email_validate'),
 
     #Coordinator URLs
     path('setup/<str:uidb64>/<str:token>/', views.link_coordinator_validation, name='link_coordinator_validation'),
