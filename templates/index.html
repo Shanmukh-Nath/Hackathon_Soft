@@ -1,10 +1,108 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Index</title>
+    <style>
+        body{
+            margin: 0;
+            overflow: hidden;
+            position: relative;
+
+        }
+        canvas{
+            width: auto;
+            height:auto;
+            z-index: -1;
+            position: absolute;
+        }
+        h1{
+            z-index: 1;
+            position: absolute;
+        }
+    </style>
 </head>
 <body>
+    <script src="{% static 'js/three.min.js' %}"></script>
+    <script src="{% static 'js/EffectComposer.js' %}"></script>
+    <script src="{% static 'js/UnrealBloomPass.js' %}"></script>
+    <script src="{% static 'js/RenderPass.js' %}"></script>
+    <script src="{% static 'js/CopyShader.js' %}"></script>
+    <script src="{% static 'js/ConvolutionShader.js' %}"></script>
+    <script src="{% static 'js/LuminosityHighPassShader.js' %}"></script>
+    <script src="{% static 'js/ShaderPass.js' %}"></script>
+<canvas class="webgl">
+        </canvas>
+    <h1 style="color: white">Hi</h1>
+<script>
+scene = new THREE.Scene();
+const fov = 45;
+const aspect = window.innerWidth / window.innerHeight;
+const near = 0.1;
+const far = 1000;
+const canvas = document.getElementsByTagName("canvas")[0];
+renderer = new THREE.WebGLRenderer({
+  canvas: canvas,
+  antialias: true,
+});
+renderer.autoClear = false;
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(window.devicePixelRatio ? window.devicePixelRatio : 1);
+console.log(window.innerWidth);
+renderer.setClearColor(0x000000, 0.0);
+document.body.appendChild(renderer.domElement);
 
+camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+camera.position.set(0,0,10);
+scene.add(camera);
+camera.resize = false;
+
+const renderScene = new THREE.RenderPass(scene, camera);
+const bloomPass = new THREE.UnrealBloomPass(
+  new THREE.Vector2(window.innerWidth, window.innerHeight),
+  1.5,
+  0.4,
+  0.85
+);
+bloomPass.threshold = 0;
+bloomPass.strength = 2; //intensity of glow
+bloomPass.radius = 0;
+scene.add(bloomPass);
+const bloomComposer = new THREE.EffectComposer(renderer);
+bloomComposer.setSize(window.innerWidth, window.innerHeight);
+bloomComposer.renderToScreen = true;
+bloomComposer.addPass(renderScene);
+bloomComposer.addPass(bloomPass);
+
+
+// galaxy geometry
+const starGeometry = new THREE.SphereGeometry(80, 64, 64);
+
+// galaxy material
+const starMaterial = new THREE.MeshBasicMaterial({
+  map: THREE.ImageUtils.loadTexture("{% static 'img/galaxy1.png' %}"),
+  side: THREE.BackSide,
+  transparent: true,
+});
+
+
+const starMesh = new THREE.Mesh(starGeometry, starMaterial);
+scene.add(starMesh);
+
+//ambient light
+const ambientlight = new THREE.AmbientLight(0xffffff, 1);
+scene.add(ambientlight);
+
+const animate = () => {
+  requestAnimationFrame(animate);
+  starMesh.rotation.y += 0.001;
+  renderer.render(scene,camera);
+  bloomComposer.render();
+};
+
+animate();
+</script>
 </body>
 </html>

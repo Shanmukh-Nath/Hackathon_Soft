@@ -1,18 +1,134 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html>
 <head>
     <title>Registration Form</title>
     <style>
-        .form{
-            left: 15%;
-            position: absolute;
-            width: auto;
-            height: auto;
+    body {
+        margin: 0;
+
+        position: relative;
+        background-color: #141414; /* Set a background color */
+        font-family: Arial, sans-serif; /* Define a font family */
+    }
+
+    canvas {
+        top: 0;
+        left: 0;
+        z-index: -1;
+        position: absolute;
+    }
+
+    .main-form {
+        background: rgba(0, 0, 0, 0.7); /* Add a semi-transparent background */
+        z-index: 1;
+        position: absolute;
+        color: white;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, 0%); /* Center the form */
+        padding: 20px;
+        border-radius: 10px; /* Add rounded corners */
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3); /* Add a shadow */
+    }
+
+    form {
+        width: 100%;
+        max-width: 400px; /* Set a maximum width for the form */
+        margin: 0 auto;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="date"],
+    select {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ccc; /* Add a border */
+        border-radius: 5px;
+        font-size: 16px;
+    }
+    label{
+        padding: 10px;
+    }
+
+    input[type="radio"] {
+        margin-right: 10px;
+    }
+
+    #submit-button input[type="submit"] {
+        background-color: #007BFF; /* Set a button background color */
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+
+    #submit-button input[type="submit"]:hover {
+        background-color: #0056b3; /* Change color on hover */
+    }
+
+    .alert {
+        padding: 10px;
+        margin-bottom: 20px;
+        border-radius: 5px;
+    }
+
+    .alert-success {
+        background-color: #4CAF50; /* Success message background color */
+    }
+
+    .alert-danger {
+        background-color: #f44336; /* Error message background color */
+    }
+
+    .text-success {
+        color: #4CAF50; /* Success message text color */
+    }
+
+    .text-danger {
+        color: #f44336; /* Error message text color */
+    }
+
+    @media (max-width: 768px) {
+        .main-form {
+            width: 90%;
         }
-    </style>
+    }
+</style>
+
 </head>
 
 <body>
+{#All Necessary Imports#}
+<script src="{% static 'js/three.min.js' %}"></script>
+    <script src="{% static 'js/EffectComposer.js' %}"></script>
+    <script src="{% static 'js/UnrealBloomPass.js' %}"></script>
+    <script src="{% static 'js/RenderPass.js' %}"></script>
+    <script src="{% static 'js/CopyShader.js' %}"></script>
+    <script src="{% static 'js/ConvolutionShader.js' %}"></script>
+    <script src="{% static 'js/LuminosityHighPassShader.js' %}"></script>
+    <script src="{% static 'js/ShaderPass.js' %}"></script>
+<canvas class="webgl">
+        </canvas>
+
+
+
+{#Here Form Starts#}
+<div class="main-form">
         {% if messages %}
             {% for message in messages %}
 <div class="container-fluid p-0">
@@ -29,7 +145,7 @@
         <div class="form-group">
     <label for="email">Email</label>
     {{ form.email }}
-    <div class="email-feedback invalid-feedback" style="display: none">
+    <div class="email-feedback invalid-feedback" style="display: none;color: red">
         <p></p>
     </div>
 </div>
@@ -38,7 +154,7 @@
 <div class="form-group">
     <label for="mobile">Mobile</label>
     {{ form.mobile }}
-    <div class="mobile-feedback invalid-feedback" style="display: none">
+    <div class="mobile-feedback invalid-feedback" style="display: none;color: red">
         <p></p>
     </div>
 </div>
@@ -93,7 +209,99 @@
         </div>
     </form>
     </div>
+</div>
+{#ThreeJS Script#}
+<script>
+    scene = new THREE.Scene();
+const fov = 45;
+const aspect = window.innerWidth / window.innerHeight;
+const near = 0.1;
+const far = 1000;
+const canvas = document.getElementsByTagName("canvas")[0];
+renderer = new THREE.WebGLRenderer({
+  canvas: canvas,
+  antialias: true,
+});
+renderer.autoClear = false;
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(window.devicePixelRatio ? window.devicePixelRatio : 1);
+console.log(window.innerWidth);
+renderer.setClearColor(0x000000, 0.0);
+document.body.appendChild(renderer.domElement);
 
+camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+camera.position.set(0,0,5);
+scene.add(camera);
+camera.resize = false;
+
+const renderScene = new THREE.RenderPass(scene, camera);
+const bloomPass = new THREE.UnrealBloomPass(
+  new THREE.Vector2(window.innerWidth, window.innerHeight),
+  1.5,
+  0.4,
+  0.85
+);
+bloomPass.threshold = 0;
+bloomPass.strength = 2; //intensity of glow
+bloomPass.radius = 0;
+scene.add(bloomPass);
+const bloomComposer = new THREE.EffectComposer(renderer);
+bloomComposer.setSize(window.innerWidth, window.innerHeight);
+bloomComposer.renderToScreen = true;
+bloomComposer.addPass(renderScene);
+bloomComposer.addPass(bloomPass);
+
+
+// galaxy geometry
+const starGeometry = new THREE.SphereGeometry(80, 64, 64);
+
+
+
+// galaxy material
+const starMaterial = new THREE.MeshBasicMaterial({
+  map: THREE.ImageUtils.loadTexture("{% static 'img/galaxy1.png' %}"),
+  side: THREE.BackSide,
+  transparent: true,
+});
+
+
+
+const starMesh = new THREE.Mesh(starGeometry, starMaterial);
+scene.add(starMesh);
+
+//ambient light
+const ambientlight = new THREE.AmbientLight(0xffffff, 1);
+scene.add(ambientlight);
+
+const animate = () => {
+  requestAnimationFrame(animate);
+  // Resize the renderer to match the updated window size
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+            // Update the camera's aspect ratio
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+  starMesh.rotation.y += 0.001;
+  renderer.render(scene,camera);
+  bloomComposer.render();
+};
+
+animate();
+window.addEventListener('scroll', function() {
+    console.log("Here");
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            const newHeight = window.innerHeight + window.scrollY;
+            renderer.setSize(window.innerWidth, newHeight);
+        });
+        window.addEventListener('resize', function() {
+            const newWidth = window.innerWidth;
+            const newHeight = window.innerHeight + window.scrollY;
+            camera.aspect = newWidth / newHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(newWidth, newHeight);
+        });
+</script>
     <script>
         document.getElementById('team_radio').addEventListener('click', function() {
             document.getElementById('team-size').style.display = 'block';
@@ -229,7 +437,7 @@ teamNameField.addEventListener('keyup', (e) => {
         const memberNumber = i + 1;
         const memberDiv = document.createElement('div');
         memberDiv.innerHTML = `
-            <h3>Team Member ${memberNumber}</h3>
+            <h3>Team Member ${memberNumber+1}</h3>
             <label for="team_member_first_name_${i}">First Name:</label>
             <input type="text" name="team_member_first_name_${i}"><br>
             <label for="team_member_last_name_${i}">Last Name:</label>
@@ -243,7 +451,7 @@ teamNameField.addEventListener('keyup', (e) => {
             </div>
             <p class="text-sm text-success email-valid-out"></p><br>
             <label for="team_member_mobile_${i}">Mobile:</label>
-            <input type="text" name="team_member_mobile_${i}">
+            <input type="text" name="team_member_mobile_${i}" maxlength="10">
             <div class="mobile-feedback invalid-feedback" style="display: none">
                     <p></p>
             </div>

@@ -25,9 +25,10 @@ urlpatterns = [
     path('coordinator/',views.setup_coordinator_account,name='setup_coordinator_account'),
     path('coordinator/mobile-validate/',views.CoordinatorMobileValidation.as_view(),name='coordinator_mobile_validate'),
     path('coordinator/username-validate/', views.CoordinatorUsernameValidation.as_view(),name='coordinator_username_validate'),
+    path('coordinator/aadhar-validate/', views.CoordinatorAadharValidation.as_view(),name='coordinator_aadhar_validate'),
     path('invalid_activation_link/', views.invalid_activation_link, name='invalid_activation_link'),
     path('coordinator/login/',views.coordinator_login,name='coordinator_login'),
     path('coordinator/dashboard/',views.coordinator_dashboard,name='coordinator_dashboard'),
     path('coordinator/view_participants/', views.view_participants_coordinator, name='view_participants_coordinator'),
-    path('coordinator/edit_participant/<int:participant_id>', views.edit_participant_coordinator, name='edit_participant_coordinator'),
+    path('coordinator/edit_participant/<str:encoded_id>', views.edit_participant_coordinator, name='edit_participant_coordinator'),
 ]

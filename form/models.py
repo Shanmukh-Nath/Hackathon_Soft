@@ -36,6 +36,13 @@ class Coordinator(models.Model):
 
     def get_email_field(self):
         return 'email'
+    def encoded_id(self):
+        import base64
+        return base64.b64encode(str(self.id))
+
+    def decode_id(self, id):
+        import base64
+        return base64.b64decode(id)
 
     # def last_login(self):
     #     return None
@@ -60,7 +67,7 @@ class Participant(models.Model):
     last_name = models.CharField(max_length=100)
     date_of_birth = models.CharField(max_length=100)
     email = models.EmailField(unique=True)
-    mobile = models.CharField(max_length=15,unique=True)
+    mobile = models.CharField(max_length=10,unique=True)
     state = models.CharField(max_length=100)
     college = models.CharField(max_length=100)
     aadhar = models.CharField(max_length=12,default='',validators=[MinLengthValidator(12)])
@@ -71,6 +78,15 @@ class Participant(models.Model):
 
     def __str__(self):
         return self.first_name
+
+    def encoded_id(self):
+        import base64
+        id_bytes = str(self.id).encode('utf-8')
+        return base64.b64encode(id_bytes).decode('utf-8')
+
+    def decode_id(self,encoded_id):
+        import base64
+        return base64.b64decode(encoded_id.encode()).decode()
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)

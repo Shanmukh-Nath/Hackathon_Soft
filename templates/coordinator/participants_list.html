@@ -36,16 +36,14 @@
 </div>
 {% endfor %}
         {% endif %}
-<input type="text" id="searchInput" onkeyup="searchTable()" placeholder="Search for coordinators..." />
+<input type="text" id="searchInput" onkeyup="searchTable()" placeholder="Search for participants..." />
 <a href="{% url 'coordinator_dashboard' %}">Go Back</a>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.js"></script>
 <table>
   <thead>
     <tr>
       <th>Email</th>
       <th>First Name</th>
-      <th>Last Name</th>
-      <th>Date of Birth</th>
-      <th>Mobile</th>
       <th>State</th>
       <th>College</th>
       <th>Domain</th>
@@ -59,9 +57,6 @@
     <tr>
       <td>{{ coordinator.email }}</td>
       <td>{{ coordinator.first_name }}</td>
-      <td>{{ coordinator.last_name }}</td>
-        <td>{{ coordinator.date_of_birth }}</td>
-        <td>{{ coordinator.mobile }}</td>
         <td>{{ coordinator.state }}</td>
         <td>{{ coordinator.college }}</td>
         <td>{{ coordinator.domain_of_interest.domain_name }}</td>
@@ -70,13 +65,25 @@
 
       <!-- Add more boolean attributes as needed -->
     <td>
-        <a href="{% url 'edit_participant_coordinator' coordinator.id %}">Edit</a>
-      </td>
+  <a href="{% url 'edit_participant_coordinator' coordinator.encoded_id %}">Edit</a>
+</td>
     </tr>
     {% endfor %}
   </tbody>
 </table>
 <script>
+      function encryptData(data) {
+    const secretKey = 'YourSecretKey'; // Replace with your secret key
+    const encrypted = CryptoJS.AES.encrypt(data, secretKey).toString();
+    return encrypted;
+  }
+
+  // Decrypt token to retrieve data
+  function decryptToken(token) {
+    const secretKey = 'YourSecretKey'; // Replace with your secret key
+    const decrypted = CryptoJS.AES.decrypt(token, secretKey).toString(CryptoJS.enc.Utf8);
+    return decrypted;
+  }
   function searchTable() {
     var input, filter, table, tr, td, i, txtValue;
     input = document.getElementById("searchInput");

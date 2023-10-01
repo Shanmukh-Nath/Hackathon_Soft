@@ -1,3 +1,4 @@
+import base64
 import csv
 import datetime
 import json
@@ -117,6 +118,7 @@ def link_coordinator_validation(request, uidb64, token):
 
     except (TypeError, ValueError, OverflowError, Coordinator.DoesNotExist):
         print("Error")
+    return redirect('invalid_activation_link')
 
 
 
@@ -183,9 +185,9 @@ def edit_participant_super(request, participant_id):
 
 
 @login_required(login_url='/coordinator/login/')
-def edit_participant_coordinator(request, participant_id):
+def edit_participant_coordinator(request, encoded_id):
+    participant_id = int(base64.b64decode(encoded_id.encode()).decode())
     participant = Participant.objects.get(pk=participant_id)
-
     if request.method == 'POST':
         form = ParticipantEditForm(request.POST, instance=participant)
         if form.is_valid():
@@ -351,6 +353,7 @@ def registration(request):
         if form.is_valid():
             participant = form.save(commit=False)
             is_individual = request.POST.get('is_individual')
+            team_mem = [participant]
             if is_individual == '1':
                 participant.is_individual = True
                 participant.save()
@@ -361,6 +364,11 @@ def registration(request):
                 )
                 participant.team = team
                 participant.save()
+                subject = 'Registration Successful'
+                message = 'Thank you for registering!'
+                from_email = 'your_email@example.com'
+                receipt = participant.email
+                send_mail(subject,message,from_email,[receipt])
                 return redirect('success')
             else:
                 participant.is_individual = False
@@ -368,7 +376,6 @@ def registration(request):
                 print(request.POST)
                 team_size = int(request.POST.get('team_size'))
                 team_name = request.POST.get('team_name')
-                print(team_name)
                 if 3 <= team_size <= 5:
 
                     team = Team.objects.create(
@@ -382,24 +389,41 @@ def registration(request):
                     participant.save()
 
                     for i in range(team_size - 1):
-                        team_member = Participant(
-                            first_name=request.POST.get(f'team_member_first_name_{i}'),
-                            last_name=request.POST.get(f'team_member_last_name_{i}'),
-                            date_of_birth=request.POST.get(f'team_member_date_of_birth_{i}'),
-                            email=request.POST.get(f'team_member_email_{i}'),
-                            mobile=request.POST.get(f'team_member_mobile_{i}'),
-                            state=request.POST.get(f'team_member_state_{i}'),
-                            college=request.POST.get(f'team_member_college_{i}'),
-                            aadhar=request.POST.get(f'team_member_aadhar_{i}'),
-                            domain_of_interest=participant.domain_of_interest,
-                            is_individual=False,
-                            team=team
-                        )
-                        team_member.save()
+                        if participant.email==request.POST.get(f'team_member_email_{i}') or participant.mobile==request.POST.get(f'team_member_mobile_{i}') or participant.aadhar==request.POST.get(f'team_member_aadhar_{i}'):
+                            participant.delete()
+                            team.delete()
+                            messages.error(request,'You cannot use same details')
+                            return redirect('registration')
+                        else:
+                            team_member = Participant(
+                                first_name=request.POST.get(f'team_member_first_name_{i}'),
+                                last_name=request.POST.get(f'team_member_last_name_{i}'),
+                                date_of_birth=request.POST.get(f'team_member_date_of_birth_{i}'),
+                                email=request.POST.get(f'team_member_email_{i}'),
+                                mobile=request.POST.get(f'team_member_mobile_{i}'),
+                                state=request.POST.get(f'team_member_state_{i}'),
+                                college=request.POST.get(f'team_member_college_{i}'),
+                                aadhar=request.POST.get(f'team_member_aadhar_{i}'),
+                                domain_of_interest=participant.domain_of_interest,
+                                is_individual=False,
+                                team=team
+                            )
+                            team_member.save()
+                    team_mem = Participant.objects.filter(team=participant.team)
+                    print(team_mem)
+                    for t in team_mem:
+                        subject = 'Registration Successful'
+                        message = 'Thank you for registering!'
+                        from_email = 'your_email@example.com'
+                        receipt = t.email
+                        send_mail(subject, message, from_email, [receipt])
                     return redirect('success')
+
     else:
         form = RegistrationForm()
     return render(request, 'register.html', {'form': form})
+
+
 
 
 class EmailValidation(View):
@@ -454,6 +478,20 @@ class CoordinatorUsernameValidation(View):
 
         return JsonResponse({'username_valid': True})  # Modify this as per your validation logic
 
+class CoordinatorAadharValidation(View):
+    def post(self, request):
+        data = json.loads(request.body)
+        mobile = data['aadhar']
+
+        if Coordinator.objects.filter(aadhar=mobile).exists():
+                return JsonResponse({'aadhar_error': 'Aadhar Number is already registered'}, status=409)
+
+        return JsonResponse({'aadhar_valid': True})
+
 
 def success(request):
-    return render(request, 'reg.html')
+    print(request.POST)
+    return render(request, 'success.html')
+
+def index(request):
+    return render(request,'index.html')

@@ -4,53 +4,83 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Coordinator</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
 
-        .container {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
+    .container {
+        background-color: #fff;
+        padding: 20px;
+        width: 70%;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
 
-        .form-group {
-            margin-bottom: 20px;
-        }
+    form {
+        width: 100%;
+    }
 
-        label {
-            font-weight: bold;
-        }
+    .form-group {
+        margin-bottom: 20px;
+    }
 
-        input,
-        input[type="password"] {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
+    label {
+        font-weight: bold;
+    }
 
-        .btn {
-            background-color: #007BFF;
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            cursor: pointer;
-        }
+    input,
+    input[type="password"] {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
 
-        .btn:hover {
-            background-color: #0056b3;
-        }
-    </style>
+    .btn {
+        background-color: #007BFF;
+        color: #fff;
+        border: none;
+        padding: 10px 20px;
+        cursor: pointer;
+        left: 50%;
+    }
+
+    .btn:hover {
+        background-color: #0056b3;
+    }
+
+    /* Use flexbox for layout */
+    .flex-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+    }
+    #id_username{
+        width: 75%;
+    }
+    #id_mobile{
+        width: 80%;
+    }
+    #id_first_name{
+        width: 70%;
+    }
+    #id_date_of_birth{
+        width: 75%;
+    }
+    .flex-item {
+        flex-basis: 48%; /* Adjust as needed for spacing */
+        padding: 5px;
+    }
+</style>
+
 </head>
 <body>
         {% if messages %}
@@ -63,57 +93,70 @@
 {% endfor %}
         {% endif %}
     <div class="container">
-        <h2>Coordinator Account Setup</h2>
-        <form method="post">
-            <input type="text" value="{{ email }}" disabled>
+    <h2>Coordinator Account Setup</h2>
+    <form method="post">
+        <input type="text" value="{{ email }}" disabled>
+        {% csrf_token %}
 
-
-            {% csrf_token %}
-                        <label>Username (For Login)</label>
-            <input type="text"  name="username" id="id_username">
-            <div class="username-feedback invalid-feedback" style="display: none">
-        <p></p>
-</div>
-            <p class="text-sm text-success username-valid-out"></p>
-            <div class="form-group">
-<div class="form-group">
-    <label for="mobile">Mobile</label>
-    {{ form.mobile }}
-    <div class="mobile-feedback invalid-feedback" style="display: none">
-        <p></p>
-    </div>
-</div>
-<p class="text-sm text-success mobile-valid-out"></p>
-        <div class="form-group">
-        <label for="first_name">First Name</label>
-    {{ form.first_name }}
-    </div>
-        <div class="form-group">
-        <label for="last_name">Last Name</label>
-    {{ form.last_name }}
-        </div>
-            <div class="form-group">
-        <label for="date_of_birth">Date of Birth</label>
-    {{ form.date_of_birth }}
-            </div>
-                <div class="form-group">
-        <label for="college">College</label>
-    {{ form.college }}
+        <div class="flex-container">
+            <div class="flex-item">
+                <label>Username (For Login)</label>
+                <input type="text" name="username" id="id_username">
+                <div class="username-feedback invalid-feedback" style="display: none">
+                    <p></p>
                 </div>
-                    <div class="form-group">
-        <label for="state">State</label>
-    {{ form.state }}
-                    </div>
-        <div class="form-group">
-        <label for="aadhar">Aadhar</label>
-    {{ form.aadhar }}
+                <p class="text-sm text-success username-valid-out"></p>
+            </div>
+
+            <div class="flex-item">
+                <label for="mobile">Mobile</label>
+                {{ form.mobile }}
+                <div class="mobile-feedback invalid-feedback" style="display: none">
+                    <p></p>
+                </div>
+                <p class="text-sm text-success mobile-valid-out"></p>
+            </div>
+
+            <div class="flex-item">
+                <label for="first_name">First Name</label>
+                {{ form.first_name }}
+            </div>
+
+            <div class="flex-item">
+                <label for="last_name">Last Name</label>
+                {{ form.last_name }}
+            </div>
+
+            <div class="flex-item">
+                <label for="date_of_birth">Date of Birth</label>
+                {{ form.date_of_birth }}
+            </div>
+
+            <div class="flex-item">
+                <label for="college">College</label>
+                {{ form.college }}
+            </div>
+
+            <div class="flex-item">
+                <label for="state">State</label>
+                {{ form.state }}
+            </div>
+
+            <div class="flex-item">
+                <label for="aadhar">Aadhar</label>
+                {{ form.aadhar }}
+                <div class="aadhar-feedback invalid-feedback" style="display: none">
+                    <p></p>
+                </div>
+                <p class="text-sm text-success aadhar-valid-out"></p>
+            </div>
         </div>
-            </div>
-            <div class="form-group">
-                <button type="submit" class="btn">Sign Up</button>
-            </div>
-        </form>
-    </div>
+
+        <div class="form-group">
+            <button type="submit" class="btn">Sign Up</button>
+        </div>
+    </form>
+</div>
     <script>
     const mobileField = document.getElementById('id_mobile');
     const mobileValidOut = document.querySelector('.mobile-valid-out');
@@ -148,6 +191,42 @@
         });
     }
 });
+
+    const aadharField = document.getElementById('id_aadhar');
+    const aadharValidOut = document.querySelector('.aadhar-valid-out');
+    const aadharFeedbackField = document.querySelector('.aadhar-feedback');
+
+    aadharField.addEventListener('keyup', (e) => {
+    aadharValue = e.target.value;
+    aadharValidOut.style.display = 'block';
+    aadharField.classList.remove('is-invalid');
+    aadharFeedbackField.style.display = 'none';
+
+    if (aadharValue.length > 0) {
+        aadharValidOut.textContent = `Checking Aadhar ${aadharValue}`;
+        fetch('aadhar-validate/', {
+            body: JSON.stringify({ aadhar: aadharValue }),
+            method: "POST",
+            credentials: "same-origin",
+            headers: {
+                "X-CSRFToken": getCookie("csrftoken"),
+                "Accept": "application/json",
+                "Content-Type": "application/json"
+            },
+        })
+        .then((res) => res.json())
+        .then(data => {
+            aadharValidOut.style.display = 'none';
+            if (data.aadhar_error) {
+                aadharField.classList.add('is-invalid');
+                aadharFeedbackField.style.display = 'block';
+                aadharFeedbackField.innerHTML = `<p>${data.aadhar_error}</p>`;
+            }
+        });
+    }
+});
+
+
 
     const usernameField = document.getElementById('id_username');
     const usernameValidOut = document.querySelector('.username-valid-out');
