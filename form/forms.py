@@ -1,6 +1,5 @@
 from django import forms
-from .models import Participant,Coordinator
-
+from .models import Participant, Coordinator, UserProfile
 
 
 class SuperuserLoginForm(forms.Form):
@@ -35,6 +34,12 @@ class ParticipantEditForm(forms.ModelForm):
         widgets = {
             'date_of_birth': forms.DateInput(attrs={'type': 'date'}),
         }
+
+class UserProfileEditForm(forms.ModelForm):
+    class Meta:
+        model = UserProfile
+        exclude = []  # Include all fields from the Participant model
+        fields = '__all__'
 
 
 

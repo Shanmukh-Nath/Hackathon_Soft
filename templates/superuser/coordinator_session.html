@@ -99,30 +99,32 @@ tbody td:hover:before {
 <table>
   <thead>
     <tr>
-      <th>Email</th>
+      <th>Username</th>
       <th>First Name</th>
-      <th>Last Name</th>
-      <th>Invited</th>
-      <th>Setup</th>
+      <th>Email</th>
+        <th>Logged In</th>
+      <th>Session Key</th>
+      <th>Last Login</th>
       <th colspan="2">Actions</th>
       <!-- Add more boolean attributes as needed -->
     </tr>
   </thead>
   <tbody>
-    {% for coordinator in coordinators %}
+    {% for c in coords %}
     <tr>
-      <td>{{ coordinator.email }}</td>
-      <td>{{ coordinator.first_name }}</td>
-      <td>{{ coordinator.last_name }}</td>
-      <td>{% if coordinator.is_invited %} <span class="tick">&#10004;</span> {% else %} <span class="cross">&#10006;</span> {% endif %}</td>
-      <td>{% if coordinator.is_setup_complete %} <span class="tick">&#10004;</span> {% else %} <span class="cross">&#10006;</span> {% endif %}</td>
+      <td>{{ c.user.username }}</td>
+      <td>{{ c.user.first_name }}</td>
+      <td>{{ c.user.email }}</td>
+      <td>{% if c.is_logged_in %} <span class="tick">&#10004;</span> {% else %} <span class="cross">&#10006;</span> {% endif %}</td>
+      <td>{{ c.current_session_id }}</td>
+    <td>{{ c.last_login }}</td>
       <!-- Add more boolean attributes as needed -->
     <td>
-        <a href="{% url 'edit_coordinator' coordinator.id %}" class="btn btn-primary">
+        <a href="{% url 'edit_coordinator_session' c.user.id %}" class="btn btn-primary">
     <img width="32" height="32" src="https://img.icons8.com/color/48/edit--v3.png" alt="edit--v3"/>
 </a>
       </td>
-    <td><a href="{% url 'delete_coordinator_super' coordinator.id %}"><img width="32" height="32" src="https://img.icons8.com/color/48/delete-forever.png" alt="delete-forever"/></a></td>
+{#    <td><a href="{% url 'delete_coordinator_super' c.user %}"><img width="32" height="32" src="https://img.icons8.com/color/48/delete-forever.png" alt="delete-forever"/></a></td>#}
     </tr>
     {% endfor %}
   </tbody>

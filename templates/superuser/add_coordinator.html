@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,9 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Coordinator</title>
     <style>
+        @font-face {
+  font-family: Varino;
+  src: url({% static 'fonts/Varino - Normal.ttf' %});
+}
+        @font-face {
+            font-family:Alcova ;
+            src: url("{% static 'fonts/Alcova Pro.ttf' %}");
+        }
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
             margin: 0;
             padding: 0;
             display: flex;
@@ -17,42 +25,101 @@
         }
 
         .container {
-            background-color: #fff;
+            background: rgba(255, 255, 255, 0); /* Semi-transparent white background */
+    backdrop-filter: blur(5px); /* Apply a blur effect to create the glassmorphic effect */
+    border: 1px solid rgba(255, 255, 255, 0.2);
+            height: 85%;
+            width: 90%;
             padding: 20px;
             border-radius: 5px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            position: absolute;
         }
-
+        .add-coord{
+            color: white;;
+            fill: white;
+            font-size: 3vw;
+            font-family: Varino;
+            text-transform: uppercase;
+            left: 25%;
+            position: absolute;
+            text-shadow: 1px 1px 2px red, 0 0 1em blue, 0 0 0.2em blue;
+        }
+        
+        .per{
+            position: absolute;
+            top: 40%;
+            width: 40%;
+            height: 65%;
+            left: 60%;
+        }
+        
         .form-group {
             margin-bottom: 20px;
         }
 
-        label {
-            font-weight: bold;
-        }
+
+
+label {
+    text-transform: uppercase;
+  font-family: Alcova;
+  font-size: 2rem;
+  cursor: pointer;
+    top: 25%;
+    left: 45%;
+    color: white;
+    position: absolute;
+    {#text-shadow: 1px 1px 2px blue, 0 0 1em blue, 0 0 0.2em blue;#}
+}
 
         input,
         input[type="password"] {
-            width: 100%;
+            position: absolute;
+            top: 45%;
+            left: 30%;
+            width: 40%;
+
             padding: 10px;
-            border: 1px solid #ccc;
+            border: none;
+            {#border-bottom: 2px solid red;#}
+            background: rgba(255,255,255,0.3);
             border-radius: 5px;
+            transition: 0.8s;
+        }
+        input:hover{
+            border-bottom: 4px solid red;
+        }
+        ::placeholder{
+            text-align: center;
+            font-size: 1rem;
+            font-weight: 800;
+            color: black;
         }
 
         .btn {
-            background-color: #007BFF;
-            color: #fff;
+            position: absolute;
+            left: 40%;
+            top: 60%;
+            background-color: white;
+            color: black;
+            border-radius: 10px;
+            width: 15vw;
             border: none;
+            font-weight: 800;
+            font-size: 1rem;
             padding: 10px 20px;
             cursor: pointer;
+            transition: 0.5s;
         }
 
         .btn:hover {
-            background-color: #0056b3;
+            background-color: rebeccapurple;
+            color: white;
         }
     </style>
 </head>
 <body>
+<div id="addCoordinatorPage">
         {% if messages %}
             {% for message in messages %}
 <div class="container-fluid p-0">
@@ -63,12 +130,12 @@
 {% endfor %}
         {% endif %}
     <div class="container">
-        <h2>Add Coordinator</h2>
+        <h2 class="add-coord">Add Coordinator</h2>
         <form method="post">
             {% csrf_token %}
             <div class="flex-item">
                 <label for="mobile">Email</label>
-                <input type="email" name="email" id="id_email">
+                <input type="email" name="email" id="id_email" placeholder="Email">
                 <div class="email-feedback invalid-feedback" style="display: none">
                     <p></p>
                 </div>
@@ -78,8 +145,9 @@
                 <button type="submit" class="btn">Add Coordinator</button>
             </div>
         </form>
-        <a href="{% url 'superuser_dashboard' %}">Dashboard</a>
+        <img class="per" src="{% static 'img/add_coord.png' %}" alt="3d-person">
     </div>
+</div>
 <script>
             const emailField = document.getElementById('id_email');
 

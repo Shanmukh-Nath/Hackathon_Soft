@@ -11,6 +11,7 @@ urlpatterns = [
     #SuperUser URLs
     path('superuser/login/',views.superuser_login,name='superuser_login'),
     path('superuser/dashboard/',views.superuser_dashboard,name='superuser_dashboard'),
+    path('superuser/dashboard/email-validate/', views.SuperUserEmailValidation.as_view(),name='superuser_email_validate_dashboard'),
     path('superuser/add_coordinator/',views.add_coordinator,name='add_coordinator'),
     path('superuser/send_invite/',views.send_invite,name='send_invite'),
     path('superuser/invite_success/',views.send_invitations,name='invite_success'),
@@ -20,6 +21,8 @@ urlpatterns = [
     path('superuser/edit_participant/<int:participant_id>',views.edit_participant_super,name='edit_participant_super'),
     path('superuser/delete_coordinator/<int:coordinator_id>',views.delete_coordinator_super,name='delete_coordinator_super'),
     path('superuser/add_coordinator/email-validate',views.SuperUserEmailValidation.as_view(),name='superuser_email_validate'),
+    path('superuser/view_coordinator_session/', views.super_coordinator_session,name='super_session'),
+    path('superuser/edit_coordinator_session/<int:coordinator_id>', views.edit_coordinator_session, name='edit_coordinator_session'),
 
     #Coordinator URLs
     path('setup/<str:uidb64>/<str:token>/', views.link_coordinator_validation, name='link_coordinator_validation'),

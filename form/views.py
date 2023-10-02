@@ -24,7 +24,7 @@ from django.contrib.auth.models import User
 
 from .tokens import complex_token_generator
 from .forms import RegistrationForm, SuperuserLoginForm, SuperCoordinatorForm, CoordinatorForm, CoordinatorEditForm, \
-    ParticipantEditForm
+    ParticipantEditForm, UserProfileEditForm
 from .models import Participant, Team, Domain, Coordinator, UserProfile
 
 
@@ -241,12 +241,29 @@ def edit_coordinator(request, coordinator_id):
     return render(request, 'superuser/edit_coordinator.html', {'form': form, 'coordinator': coordinator})
 
 
+@login_required(login_url='/superuser/login/')
+def edit_coordinator_session(request, coordinator_id):
+    user = User.objects.get(id=coordinator_id)
+    coordinator = UserProfile.objects.get(user_id=user.id)
+
+    if request.method == 'POST':
+        form = UserProfileEditForm(request.POST, instance=coordinator)
+        if form.is_valid():
+            form.save()
+            return redirect('superuser_dashboard')
+    else:
+        form = UserProfileEditForm(instance=coordinator)
+
+    return render(request, 'superuser/edit_coordinator_session.html', {'form': form, 'coordinator': coordinator})
+
+
+
+def super_coordinator_session(request):
+    c = UserProfile.objects.all()
+    return render(request,'superuser/coordinator_session.html',{'coords':c})
+
 def logout(request):
     if request.user.is_superuser:
-        user_profile = UserProfile.objects.get(user_id=request.user.id)
-        user_profile.is_logged_in = False
-        user_profile.current_session_id = False
-        user_profile.save()
         request.session.flush()
         return redirect('superuser_login')
     else:
@@ -282,24 +299,14 @@ def superuser_login(request):
                 user.session_key = request.session.session_key
                 user.save()
                 auth.login(request, user)
-                user_profile = UserProfile.objects.get_or_create(user_id=request.user.id)
-                if user_profile[0].is_logged_in:
-                    messages.error(request,"You are already logged in.")
-                    auth.logout(request)
-                    return redirect('superuser_login')
-                else:
-                    user_profile[0].is_logged_in = True
-                    user_profile[0].current_session_id = request.session.session_key
-                    user_profile[0].last_login = timezone.now()
-                    user_profile[0].save()
-                    return redirect('superuser_dashboard')
+                return redirect('superuser_dashboard')
             else:
                 messages.error(request, 'Invalid credentials. Please try again.')
 
     return render(request, 'superuser/superuser_login.html')
 
 
-class SessionTimeoutMiddleware:
+'''class SessionTimeoutMiddleware:
     print("Here")
     def __init__(self, get_response):
         self.get_response = get_response
@@ -319,12 +326,15 @@ class SessionTimeoutMiddleware:
                 current_time = timezone.now()
                 if last_login and (current_time - last_login).total_seconds() > session_timeout:
                     print((current_time-last_login).total_seconds())
-                    logout(request)
+                    user_profile.is_logged_in = False
+                    user_profile.current_session_id = None
+                    user_profile.save()
+                    auth.logout(request)
             except UserProfile.DoesNotExist:
                 pass  # UserProfile not found, no need to check session timeout
 
         return response
-
+'''
 
 
 
@@ -341,13 +351,6 @@ def send_invite(request):
 @login_required(login_url='/superuser/login/')
 def superuser_dashboard(request):
     if request.user.is_superuser:
-        cur = request.session.session_key
-        user_profile = UserProfile.objects.get(user_id=request.user.id)
-        if user_profile.current_session_id != cur:
-            auth.logout(request)
-            messages.error(request,"you are already logged in.")
-            return redirect('superuser_login')
-        else:
             p = len(Participant.objects.all())
             user = request.user.username
             l = len(Coordinator.objects.all())
