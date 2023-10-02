@@ -6,6 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Coordinator Dashboard</title>
     <style>
+        @font-face {
+            font-family: Exodar;
+            src: url("{% static 'fonts/Exodar-Outline.ttf' %}");
+        }
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -22,8 +26,8 @@
             width: 90%;
             margin: 5%;
              /* Semi-transparent white background */
-            border: 5px solid #ccc; /* Border around the overlay */
-            border-radius: 15px;
+            {#border: 5px solid rgba(255,255,255,0.3); /* Border around the overlay */#}
+            {#border-radius: 15px;#}
             overflow: hidden; /* Ensure the overlay doesn't overflow */
             height:80%
         }
@@ -53,11 +57,12 @@
     padding: 10px 20px;
     margin-bottom: 10px;
     border-radius: 5px;
-    transition: background-color 0.3s; /* Add a smooth transition effect */
+    transition: 0.5s; /* Add a smooth transition effect */
 }
 
 .navigation ul li a:hover {
-    background-color: #0056b3; /* Change the background color on hover */
+    background-color: rgba(255,255,255,0.2);
+    color: orangered/* Change the background color on hover */
 }
 .logout-button {
     position: absolute;
@@ -90,7 +95,6 @@
             width: 75%; /* 75% for content */
             padding: 20px;
             box-sizing: border-box;
-            {#background-color: rgba(255, 255, 255, 0.9);#}
             background: rgba(255, 255, 255, 0.2); /* Semi-transparent white background */
     backdrop-filter: blur(10px); /* Apply a blur effect to create the glassmorphic effect */
     border: 1px solid rgba(255, 255, 255, 0.2); /* Add a border for contrast */
@@ -104,6 +108,198 @@
         h2 {
             margin-top: 0;
         }
+        .dashboard-content { /* Background color for the content area */
+    padding: 20px;
+    border-radius: 10px;
+    color: white;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.dashboard-title {
+    position: absolute;
+    top: 15%;
+    right: 50%;
+    transform: translate(50%,-50%);
+    text-transform: uppercase;
+    font-family: Exodar;
+    font-size: 3em;
+    font-weight: 700;
+    color: #f5f5f5;
+    text-shadow: 1px 1px 1px #919191,
+        1px 2px 1px #919191,
+        1px 3px 1px #919191,
+        1px 4px 1px #919191,
+        1px 5px 1px #919191,
+        1px 6px 1px #919191,
+        1px 7px 1px #919191,
+        1px 8px 1px #919191,
+        1px 9px 1px #919191,
+        1px 10px 1px #919191,
+    1px 18px 6px rgba(16,16,16,0.4),
+    1px 22px 10px rgba(16,16,16,0.2),
+    1px 25px 35px rgba(16,16,16,0.2),
+    1px 30px 60px rgba(16,16,16,0.4);
+}
+
+.dashboard-stats {
+    margin-top: 200px;
+}
+
+.stat {
+    font-size: 18px;
+    margin: 10px 0;
+}
+
+.highlight {
+    font-weight: bold;
+    color: #0056b3; /* Highlighted text color */
+}
+.container-flag{
+				position: absolute;
+				top: 80%;
+				left: 55%;
+				transform: translate(-50%,-50%);
+			}
+			.flag{
+				min-height: 100px;
+				min-width: 300px;
+				position: relative;
+			}
+			.white,.green,.orange{
+				position: absolute;
+				height: 50px;
+				width: 100px;
+				border-radius: 50%;
+			}
+			.flag .white img{
+				display: block;
+				margin: auto;
+				height: 50px;
+				width: 50px;
+				z-index: 20;
+				animation: ashok-chakra 4s linear infinite;
+			}
+			.flag .white{
+				background: rgba(255,255,255);
+				top: 0;
+				animation: white 8s ease forwards;
+
+			}
+			@keyframes white{
+				0%{
+					top: 0;
+					left: 0;
+				}
+				100%{
+					border-radius: 0%;
+					width: 200px;
+				}
+			}
+			.flag .orange{
+				background: rgba(255, 69, 0);
+				top: 0;
+                backdrop-filter: blur(10px);
+				animation: orange 8s ease forwards;
+			}
+			@keyframes orange{
+				0%{
+					top: 0;
+					left: 0;
+				}
+				100%{
+					top: -50px;
+					border-radius:0%;
+					width: 200px;
+				}
+			}
+			.flag .green{
+				background: rgba(0, 128, 0);
+				top: 0;
+				z-index: -1;
+				animation: green 8s ease forwards;
+
+			}
+			@keyframes green{
+				0%{
+					top: 0;
+					left: 0;
+				}
+				100%{
+					border-radius: 0%;
+					width: 200px;
+					top:50px;
+				}
+			}
+
+			@keyframes ashok-chakra {
+				0%{
+					transform: rotate(0deg);
+				}
+				100%{
+					transform: rotate(360deg);
+				}
+			}
+
+ .coord {
+	 font-family: 'Rig Bold Face', sans-serif;
+	 text-transform: uppercase;
+	 font-size: 2vw;
+	 text-align: center;
+	 font-weight: normal;
+	 margin: 0;
+	 top: 40%;
+	 left: 50%;
+	 transform: translate(-50%, -50%);
+	 position: absolute;
+	 color: #003366;
+}
+
+ h1:before, h1:after, h1 span:before, h1 span:after {
+	 content: attr(data-heading);
+	 position: absolute;
+	 overflow: hidden;
+	 left: 0;
+	 top: 0;
+	 width: 100%;
+	 z-index: 5;
+	 font-weight: normal;
+	 text-shadow: none;
+}
+ h1:before {
+	 color: #fff;
+	 font-family: 'Rig Bold Inline', sans-serif;
+}
+ h1:after {
+	 font-family: 'Rig Bold Coarse', sans-serif;
+	 color: #040351;
+}
+ span::after {
+	 font-family: 'Rig Bold Extrude', sans-serif;
+	 color: #4d8bea;
+	 z-index: -1;
+}
+ @font-face {
+	 font-family: 'Rig Bold Coarse';
+	 src: url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/209981/Rig-BoldCoarse.otf');
+}
+ @font-face {
+	 font-family: 'Rig Bold Extrude';
+	 src: url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/209981/Rig-BoldExtrude.otf');
+}
+ @font-face {
+	 font-family: 'Rig Bold Shadow';
+	 src: url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/209981/Rig-BoldShadow.otf');
+}
+ @font-face {
+	 font-family: 'Rig Bold Face';
+	 src: url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/209981/Rig-BoldFace.otf');
+}
+ @font-face {
+	 font-family: 'Rig Bold Inline';
+	 src: url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/209981/Rig-BoldInline.otf');
+}
+
     </style>
 </head>
 <body>
@@ -111,12 +307,14 @@
         <div class="navigation">
     <h2>Welcome, {{ user }}</h2>
     <ul>
+
         <li>
             <a href="#" onclick="loadContent('{% url 'view_participants_coordinator' %}')">
                 <i class="fa fa-list"></i> <!-- Font Awesome icon for 'View Participants' -->
                 View Participants
             </a>
         </li>
+
     </ul>
 <div class="logout-button">
             <form id="my_form" action="{% url 'logout' %}" method="POST">
@@ -127,17 +325,34 @@
             </form>
         </div>
 </div>
-        <div class="content" id="content">
-            <div class="content-scroll"> <!-- Add a wrapper for scrolling content -->
+<div class="content" id="content">
+    <div class="content-scroll"> <!-- Add a wrapper for scrolling content -->
         <!-- Content for the selected page will be displayed here -->
-                <h2>Dashboard</h2>
-                <p>Total {{ length }} Coordinators</p>
-        <!-- Add your page content here -->
+        <div class="dashboard-content">
+            <h2 class="dashboard-title">Coordinator Dashboard</h2>
+            <div class="dashboard-stats">
+     <div class="container-flag">
+			<div class="flag">
+				<div class="flag-section orange"></div>
+				<div class="flag-section white">
+					<img src="https://i.ibb.co/qy2Xkr4/ashoka-chakra.png" alt="ashok chakra">
+				</div>
+				<div class="flag-section green"></div>
+			</div>
+		</div>
+    </div>
+                <h1 data-heading="Total {{ length }} Participants" class="coord">
+		<span contenteditable data-heading="Total {{ length }} Participants">Total {{ length }} Participants</span>
+	</h1>
             </div>
         </div>
+        <!-- Add your page content here -->
+    </div>
+</div>
     </div>
 
     <script>
+
         function loadContent(url) {
             const contentDiv = document.getElementById('content');
             const xhr = new XMLHttpRequest();
@@ -151,6 +366,176 @@
             xhr.open('GET', url, true);
             xhr.send();
         }
+        window.onload = function (e){
+            console.log("Here");
+        }
+
+
+
+
+
+// Function to check if the "add_coordinator" page is loaded
+function checkForAddCoordinatorPage() {
+    const addCoordinatorPage = document.getElementById('addCoordinatorPage');
+    if (addCoordinatorPage) {
+        // The "add_coordinator" page is loaded, do something here
+        console.log("Add Coordinator Page is loaded!");
+        const emailField = document.getElementById('id_email');
+        const emailValidOut = document.querySelector('.email-valid-out');
+        const emailFeedbackField = document.querySelector('.email-feedback');
+
+        // Set up email validation for this page
+        setupEmailValidation(emailField, emailValidOut, emailFeedbackField);
+        // You can perform actions specific to this page here
+    }
+}
+
+// Set up an event listener for changes in the "content" div
+const contentDiv = document.getElementById('content');
+contentDiv.addEventListener('DOMSubtreeModified', checkForAddCoordinatorPage);
+
+
+checkForAddCoordinatorPage();
+function setupEmailValidation(emailField, emailValidOut, emailFeedbackField) {
+        emailField.addEventListener('keyup', (e) => {
+            console.log("hi");
+            const emailValue = e.target.value;
+            emailValidOut.style.display = 'block';
+            emailField.classList.remove('is-invalid');
+            emailFeedbackField.style.display = 'none';
+
+            if (emailValue.length > 0) {
+                emailValidOut.textContent = `Checking Email ${emailValue}`;
+                fetch('email-validate/', {
+                    body: JSON.stringify({ email: emailValue }),
+                    method: "POST",
+                    credentials: "same-origin",
+                    headers: {
+                        "X-CSRFToken": getCookie("csrftoken"),
+                        "Accept": "application/json",
+                        "Content-Type": "application/json"
+                    },
+                })
+                .then((res) => res.json())
+                .then(data => {
+                    emailValidOut.style.display = 'none';
+                    if (data.email_error) {
+                        emailField.classList.add('is-invalid');
+                        emailFeedbackField.style.display = 'block';
+                        emailFeedbackField.innerHTML = `<p>${data.email_error}</p>`;
+                    }
+                });
+            }
+        });
+    }
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = cookies[i].trim();
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+{#setupEmailValidation(emailField,emailValidOut,emailFeedbackField);#}
+ window.onbeforeunload =  function (e) {
+
+            console.log("Here");
+        e.preventDefault();
+        e.returnValue = ''; // This empty string will prompt a confirmation dialog.
+        alert("You did not Logout");
+        // You can customize the message displayed to the user.
+        var confirmationMessage = 'You did not Logout';
+
+        // Some browsers may not show your custom message.
+        (e || window.event).returnValue = confirmationMessage;
+
+        // Return the message to display the confirmation dialog.
+        return confirmationMessage;
+    }
+  function searchTable() {
+    var input, filter, table, tr, td, i, txtValue;
+    input = document.getElementById("searchInput");
+    filter = input.value.toUpperCase();
+    table = document.querySelector("table");
+    tr = table.getElementsByTagName("tr");
+
+    for (i = 0; i < tr.length; i++) {
+      td = tr[i].getElementsByTagName("td");
+      for (var j = 0; j < td.length; j++) {
+        if (td[j]) {
+          // Check if the current cell contains a hyperlink
+          var hasHyperlink = td[j].querySelector("a") !== null;
+
+          if (!hasHyperlink) {
+            txtValue = td[j].textContent || td[j].innerText;
+            if (txtValue.toUpperCase().indexOf(filter) > -1) {
+              td[j].innerHTML = txtValue.replace(
+                new RegExp(filter, "gi"),
+                (match) => `<span class="highlight">${match}</span>`
+              );
+            } else {
+              td[j].innerHTML = txtValue;
+            }
+          }
+        }
+      }
+    }
+  }
+var span = document.querySelector("span");
+
+span.addEventListener("input", function() {
+	var text = this.innerText;
+	this.setAttribute("data-heading", text);
+	this.parentElement.setAttribute("data-heading", text);
+});
+function filterTable() {
+    var input, filter, table, tr, td, i, txtValue;
+    input = document.getElementById("searchInput");
+    filter = input.value.toUpperCase();
+    table = document.querySelector("table");
+    tr = table.getElementsByTagName("tr");
+
+    // Get the selected team filter value
+    var teamFilter = document.getElementById("teamFilter").value;
+
+    for (i = 0; i < tr.length; i++) {
+        td = tr[i].getElementsByTagName("td");
+
+        // Check if there are enough cells in the row
+        if (td.length > 5) {
+            var teamColumn = td[5]; // Assuming the team column is the sixth column (index 5)
+
+            // Check if the current row matches the search input and team filter
+            var matchesSearch = false;
+            var matchesTeamFilter = teamFilter === "all" || teamColumn.textContent.trim() === teamFilter;
+
+            for (var j = 0; j < td.length; j++) {
+                if (td[j]) {
+                    txtValue = td[j].textContent || td[j].innerText;
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        matchesSearch = true;
+                        break;
+                    }
+                }
+            }
+
+            // Hide or show the row based on filter criteria
+            if (matchesSearch && matchesTeamFilter) {
+                tr[i].style.display = "";
+            } else {
+                tr[i].style.display = "none";
+            }
+        }
+    }
+}
     </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </body>
 </html>

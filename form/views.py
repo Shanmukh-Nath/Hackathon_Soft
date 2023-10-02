@@ -205,7 +205,8 @@ def edit_participant_coordinator(request, encoded_id):
 @login_required(login_url='/coordinator/login')
 def view_participants_coordinator(request):
     coordinators = Participant.objects.all()
-    return render(request, 'coordinator/participants_list.html', {'coordinators': coordinators})
+    teams = Team.objects.all()
+    return render(request, 'coordinator/participants_list.html', {'coordinators': coordinators,'teams':teams})
 
 
 @login_required(login_url='/coordinator/login/')
@@ -390,7 +391,6 @@ def registration(request):
         if form.is_valid():
             participant = form.save(commit=False)
             is_individual = request.POST.get('is_individual')
-            team_mem = [participant]
             if is_individual == '1':
                 participant.is_individual = True
                 participant.save()
@@ -401,11 +401,7 @@ def registration(request):
                 )
                 participant.team = team
                 participant.save()
-                subject = 'Registration Successful'
-                message = 'Thank you for registering!'
-                from_email = 'your_email@example.com'
-                receipt = participant.email
-                send_mail(subject,message,from_email,[receipt])
+
                 return redirect('success')
             else:
                 participant.is_individual = False
@@ -425,7 +421,14 @@ def registration(request):
                     participant.team = team
                     participant.save()
 
+                    teams_email = []
+                    teams_mobile = []
+                    teams_aadhar = []
+
                     for i in range(team_size - 1):
+                        teams_email.append(request.POST.get(f'team_member_email_{i}'))
+                        teams_mobile.append(request.POST.get(f'team_member_mobile_{i}'))
+                        teams_aadhar.append(request.POST.get(f'team_member_aadhar_{i}'))
                         if participant.email==request.POST.get(f'team_member_email_{i}') or participant.mobile==request.POST.get(f'team_member_mobile_{i}') or participant.aadhar==request.POST.get(f'team_member_aadhar_{i}'):
                             participant.delete()
                             team.delete()
@@ -446,14 +449,12 @@ def registration(request):
                                 team=team
                             )
                             team_member.save()
-                    team_mem = Participant.objects.filter(team=participant.team)
-                    print(team_mem)
-                    for t in team_mem:
-                        subject = 'Registration Successful'
-                        message = 'Thank you for registering!'
-                        from_email = 'your_email@example.com'
-                        receipt = t.email
-                        send_mail(subject, message, from_email, [receipt])
+
+                    if set(teams_email) != team_size or set(teams_mobile) != team_size or set(teams_aadhar) != team_size:
+                        participant.delete()
+                        team.delete()
+                        messages.error(request,"You cannot use same details in form, please check the data of these unique fields - Email, Mobile, Aadhar.")
+                        return redirect('registration')
                     return redirect('success')
 
     else:
