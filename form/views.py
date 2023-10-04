@@ -2,6 +2,7 @@ import base64
 import csv
 import datetime
 import json
+import random
 
 from django.contrib import messages, auth
 from django.contrib.auth import login, authenticate, get_user_model
@@ -10,22 +11,23 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password, check_password
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
-from django.core.mail import send_mail
+from django.core.mail import send_mail, EmailMultiAlternatives, BadHeaderError
 from django.db import IntegrityError
 
-from django.http import JsonResponse, HttpResponseRedirect
+from django.http import JsonResponse, HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode, int_to_base36
+from django import template
 from django.views import View
 from django.contrib.auth.models import User
 
 from .tokens import complex_token_generator
 from .forms import RegistrationForm, SuperuserLoginForm, SuperCoordinatorForm, CoordinatorForm, CoordinatorEditForm, \
     ParticipantEditForm, UserProfileEditForm
-from .models import Participant, Team, Domain, Coordinator, UserProfile
+from .models import Participant, Team, Domain, Coordinator, UserProfile, CheckInOTP
 
 
 def send_invitations(request):
@@ -153,7 +155,7 @@ def coordinator_login(request):
                         return redirect('coordinator_dashboard')
             else:
                 print("invalid")
-                messages.error(request, 'Invalid credentials. Please try again.')
+                messages.error(request, 'Invalid credentials.')
 
     return render(request, 'coordinator/coordinator_login.html')
 
@@ -374,15 +376,111 @@ def delete_coordinator_super(request, coordinator_id):
 
 @login_required(login_url='/superuser/login/')
 def add_coordinator(request):
+    print(request)
     if request.method == "POST":
         form = SuperCoordinatorForm(request.POST)
         if form.is_valid():
+            print(request.POST)
             # Save the coordinator
             form.save()
             return redirect("superuser_dashboard")
     else:
         form = SuperCoordinatorForm()
     return render(request, "superuser/add_coordinator.html", {"form": form})
+
+
+
+@login_required(login_url='/coordinator/login/')
+def part_check_in(request):
+    coordinator = Participant.objects.filter(is_checkedin=False)
+    return render(request,'coordinator/checkin_list.html',{'coordinators':coordinator})
+
+@login_required(login_url='/coordinator/login/')
+def part_check_in_success(request):
+    coordinator = Participant.objects.filter(is_checkedin=True)
+    return render(request,'coordinator/success_check_in.html',{'coordinators':coordinator})
+
+
+def generate_otp(participant):
+    try:
+        # Try to retrieve an existing OTP for the participant
+        checkin_otp = CheckInOTP.objects.get(participant=participant)
+
+        # Check if the OTP is expired
+        if (timezone.now() - checkin_otp.sent_time).total_seconds() >= 300:
+            # OTP has expired, generate a new one
+            otp = ''.join(random.choice('0123456789') for _ in range(6))
+            checkin_otp.otp = otp
+            checkin_otp.is_expired = False
+            checkin_otp.sent_time = timezone.now()
+            checkin_otp.save()
+        else:
+            # OTP is not expired, send the same OTP again
+            otp = checkin_otp.otp
+    except CheckInOTP.DoesNotExist:
+        # Generate a new OTP if it doesn't exist for the participant
+        otp = ''.join(random.choice('0123456789') for _ in range(6))
+        checkin_otp = CheckInOTP.objects.create(participant=participant, otp=otp)
+
+    # Send the OTP to the participant's email (implement this part using email sending libraries)
+    subject = "CheckIN OTP"
+    message = "Please Use this OTP for Checking in to event with your nearest Coordinator " + otp
+    from_email = "123@example.com"
+    recepient = [participant.email]
+    send_mail(subject,message,from_email,recepient)
+
+    return otp
+
+
+@login_required(login_url='/coordinator/login/')
+def verify_otp(request, encoded_id):
+    if request.method == 'POST':
+        print(request.POST)
+        otp_entered = request.POST.get('combined_otp')
+        print(otp_entered)
+        participant_id = int(base64.b64decode(encoded_id.encode()).decode())
+        participant = Participant.objects.get(id=participant_id)
+
+        try:
+            # Try to retrieve an existing OTP for the participant
+            checkin_otp = CheckInOTP.objects.get(participant=participant)
+
+            # Check if the OTP is within the allowed time frame (e.g., 5 minutes)
+            if (timezone.now() - checkin_otp.sent_time).total_seconds() <= 300 and otp_entered == checkin_otp.otp:
+                checkin_otp.usage_time = timezone.now()
+                checkin_otp.is_expired = True
+                checkin_otp.save()
+                participant.is_checkedin = True
+                participant.save()
+
+                # Mark the participant as checked in or perform any other required actions
+                # ...
+                messages.success(request, "Participant Checked In")
+                return redirect('coordinator_dashboard')
+            elif (timezone.now() - checkin_otp.sent_time).total_seconds() >= 300:
+                # OTP has expired, generate a new one and send again
+                otp = generate_otp(participant)
+                messages.error(request, "OTP Expired. New OTP Sent.")
+            elif otp_entered!=checkin_otp and otp_entered != '' and otp_entered is not None:
+                messages.error(request,"Invalid OTP")
+        except CheckInOTP.DoesNotExist:
+            messages.error(request, "Invalid OTP")
+
+    participant_id = int(base64.b64decode(encoded_id.encode()).decode())
+    participant = Participant.objects.get(pk=participant_id)
+    checked = CheckInOTP.objects.filter(participant_id = participant_id).exists()
+    if checked:
+        chk = CheckInOTP.objects.get(participant_id = participant_id)
+        if chk.usage_time is not None:
+            messages.error(request,"Participant already checkedin")
+            return redirect('coordinator_dashboard')
+    otp = generate_otp(participant)
+    messages.success(request, "OTP Successfully Sent")
+
+    return render(request, 'coordinator/checkin_otp_verification.html', {'participant': participant, 'otp': otp})
+
+
+
 
 
 def registration(request):
@@ -401,7 +499,7 @@ def registration(request):
                 )
                 participant.team = team
                 participant.save()
-
+                send_reg_success(request,participant)
                 return redirect('success')
             else:
                 participant.is_individual = False
@@ -417,6 +515,7 @@ def registration(request):
 
                     )
                     team.team_name = team_name
+                    team.team_size = team_size
                     team.save()
                     participant.team = team
                     participant.save()
@@ -455,6 +554,7 @@ def registration(request):
                         team.delete()
                         messages.error(request,"You cannot use same details in form, please check the data of these unique fields - Email, Mobile, Aadhar.")
                         return redirect('registration')
+                    send_reg_success(request,participant)
                     return redirect('success')
 
     else:
@@ -462,6 +562,30 @@ def registration(request):
     return render(request, 'register.html', {'form': form})
 
 
+
+def send_reg_success(request,participant):
+    parts = Participant.objects.filter(team_id=participant.team_id)
+    print(parts)
+    for p in parts:
+        subject = "Successfully Registered"
+        plaintext = template.loader.get_template('Emails/reg-success.html')
+        htmltemp = template.loader.get_template('Emails/reg-success.html')
+        domain = get_current_site(request).domain
+        from_email = "noreply@exam.in"
+        c = {
+            'username':p.first_name + " " + p.last_name,
+            'domain':p.domain_of_interest.domain_name,
+            'teamname':p.team.team_name,
+            'teamsize':p.team.team_size,
+        }
+        text_content = plaintext.render(c)
+        html_content = htmltemp.render(c)
+        try:
+            msg = EmailMultiAlternatives(subject, text_content, from_email, [p.email])
+            msg.attach_alternative(html_content, 'text/html')
+            msg.send()
+        except BadHeaderError:
+            return HttpResponse('Invalid header found.')
 
 
 class EmailValidation(View):

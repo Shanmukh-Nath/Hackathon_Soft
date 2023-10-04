@@ -13,6 +13,7 @@ urlpatterns = [
     path('superuser/dashboard/',views.superuser_dashboard,name='superuser_dashboard'),
     path('superuser/dashboard/email-validate/', views.SuperUserEmailValidation.as_view(),name='superuser_email_validate_dashboard'),
     path('superuser/add_coordinator/',views.add_coordinator,name='add_coordinator'),
+    path('superuser/dashboard/add_coordinator/', views.add_coordinator, name='add_coordinator'),
     path('superuser/send_invite/',views.send_invite,name='send_invite'),
     path('superuser/invite_success/',views.send_invitations,name='invite_success'),
     path('superuser/view_coordinators/',views.view_coordinators,name='view_coordinators'),
@@ -35,4 +36,7 @@ urlpatterns = [
     path('coordinator/dashboard/',views.coordinator_dashboard,name='coordinator_dashboard'),
     path('coordinator/view_participants/', views.view_participants_coordinator, name='view_participants_coordinator'),
     path('coordinator/edit_participant/<str:encoded_id>', views.edit_participant_coordinator, name='edit_participant_coordinator'),
+    path('coordinator/checkin/',views.part_check_in,name='part_checkin'),
+    path('coordinator/checkin_list/', views.part_check_in_success, name='part_checkin_success'),
+    path('verify_otp/<str:encoded_id>/', views.verify_otp, name='verify_otp'),
 ]

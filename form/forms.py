@@ -59,6 +59,7 @@ class RegistrationForm(forms.ModelForm):
     def __init__(self,*args):
         super().__init__(*args)
         self.fields.pop('edited_by')
+        self.fields.pop('is_checkedin')
         self.fields['date_of_birth'].widget = forms.widgets.DateInput(
             attrs={
                 'type':'date','placeholder':'yyy-mm-dd (DOB) ',

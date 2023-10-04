@@ -58,7 +58,13 @@
             margin-bottom: 20px;
         }
 
-
+.invalid-feedback{
+    position: absolute;
+    top: 35%;
+    left: 36%;
+    color: red;
+    font-size: 1.3rem;
+}
 
 label {
     text-transform: uppercase;
@@ -131,7 +137,7 @@ label {
         {% endif %}
     <div class="container">
         <h2 class="add-coord">Add Coordinator</h2>
-        <form method="post">
+        <form method="post" action="{% url 'add_coordinator' %}">
             {% csrf_token %}
             <div class="flex-item">
                 <label for="mobile">Email</label>

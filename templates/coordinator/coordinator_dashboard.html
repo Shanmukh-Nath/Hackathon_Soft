@@ -99,7 +99,20 @@
     backdrop-filter: blur(10px); /* Apply a blur effect to create the glassmorphic effect */
     border: 1px solid rgba(255, 255, 255, 0.2); /* Add a border for contrast */
             height: 100%;
+            overflow: auto;
         }
+                ::-webkit-scrollbar {
+  width: 12px;               /* width of the entire scrollbar */
+}
+
+::-webkit-scrollbar-track {
+  background: none;        /* color of the tracking area */
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(255,255,255,0.2);    /* color of the scroll thumb */
+  border-radius: 20px;       /* roundness of the scroll thumb */ /* creates padding around scroll thumb */
+}
         .content-scroll {
     max-height: 100%; /* Set a maximum height for the scrollable area */
     overflow: auto; /* Add a scrollbar when content overflows */
@@ -299,6 +312,24 @@
 	 font-family: 'Rig Bold Inline';
 	 src: url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/209981/Rig-BoldInline.otf');
 }
+        .checkin-button {
+    background-color: #4CAF50; /* Green background color */
+    color: white; /* White text color */
+    border: none; /* No border */
+    padding: 8px 12px; /* Padding */
+    text-align: center; /* Center text */
+    text-decoration: none; /* Remove underline */
+    display: inline-block; /* Display as inline block */
+    font-size: 14px; /* Font size */
+    margin: 2px 2px; /* Margin */
+    cursor: pointer; /* Add pointer cursor on hover */
+    border-radius: 5px; /* Rounded corners */
+}
+
+/* Style the button on hover */
+.checkin-button:hover {
+    background-color: #45a049;
+}
 
     </style>
 </head>
@@ -312,6 +343,18 @@
             <a href="#" onclick="loadContent('{% url 'view_participants_coordinator' %}')">
                 <i class="fa fa-list"></i> <!-- Font Awesome icon for 'View Participants' -->
                 View Participants
+            </a>
+        </li>
+                <li>
+            <a href="#" onclick="loadContent('{% url 'part_checkin' %}')">
+                <i class="fa fa-list"></i> <!-- Font Awesome icon for 'View Participants' -->
+                Participant Checkin
+            </a>
+        </li>
+                <li>
+            <a href="#" onclick="loadContent('{% url 'part_checkin_success' %}')">
+                <i class="fa fa-list"></i> <!-- Font Awesome icon for 'View Participants' -->
+                Success Checkin
             </a>
         </li>
 
@@ -471,7 +514,7 @@ function getCookie(name) {
       for (var j = 0; j < td.length; j++) {
         if (td[j]) {
           // Check if the current cell contains a hyperlink
-          var hasHyperlink = td[j].querySelector("a") !== null;
+          var hasHyperlink = td[j].querySelector("a,form,button,img") !== null;
 
           if (!hasHyperlink) {
             txtValue = td[j].textContent || td[j].innerText;

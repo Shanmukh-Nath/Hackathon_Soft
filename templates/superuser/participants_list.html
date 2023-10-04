@@ -19,6 +19,7 @@
   left: 5%;
   -webkit-transform: translate(-50%, -50%);
           transform: translate(-50%, -50%);
+  margin-bottom: 20px;
 }
 table {
     left: 10%;
@@ -90,6 +91,9 @@ tbody td:hover:before {
       opacity: 0.9;
       text-align: center;
   }
+  .highlighted-row {
+    background-color: rgba(255,165,0,0.5); /* Adjust the color as needed */
+}
 </style>
         {% if messages %}
             {% for message in messages %}
@@ -118,7 +122,7 @@ tbody td:hover:before {
   </thead>
   <tbody>
     {% for coordinator in coordinators %}
-    <tr>
+    <tr class="searchable-row">
       <td>{{ coordinator.email }}</td>
       <td>{{ coordinator.first_name }}</td>
         <td>{{ coordinator.state }}</td>
@@ -140,30 +144,39 @@ tbody td:hover:before {
 function searchTable() {
     var input, filter, table, tr, td, i, txtValue;
     input = document.getElementById("searchInput");
-    filter = input.value.toUpperCase();
-    table = document.querySelector("table");
-    tr = table.getElementsByTagName("tr");
+    if (input.value !== "") {
+        filter = input.value.toUpperCase();
+        table = document.querySelector("table");
+        tr = table.getElementsByTagName("tr");
 
-    for (i = 0; i < tr.length; i++) {
-      td = tr[i].getElementsByTagName("td");
-      for (var j = 0; j < td.length; j++) {
-        if (td[j]) {
-          // Check if the current cell contains a hyperlink
-          var hasHyperlink = td[j].querySelector("a") !== null;
+        for (i = 0; i < tr.length; i++) {
+            td = tr[i].getElementsByTagName("td");
+            var rowMatchesSearch = false; // Track if the row matches the search
 
-          if (!hasHyperlink) {
-            txtValue = td[j].textContent || td[j].innerText;
-            if (txtValue.toUpperCase().indexOf(filter) > -1) {
-              td[j].innerHTML = txtValue.replace(
-                new RegExp(filter, "gi"),
-                (match) => `<span class="highlight">${match}</span>`
-              );
-            } else {
-              td[j].innerHTML = txtValue;
+            for (var j = 0; j < td.length; j++) {
+                if (td[j]) {
+                    // Check if the current cell contains a hyperlink
+                    var hasHyperlink = td[j].querySelector("a") !== null;
+
+                    if (!hasHyperlink) {
+                        txtValue = td[j].textContent || td[j].innerText;
+                        if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                            // Highlight the entire row
+                            tr[i].classList.add("highlighted-row");
+                            rowMatchesSearch = true;
+                            break; // No need to check other cells in this row
+                        }
+                    }
+                }
             }
-          }
+
+            // Remove the highlight class if the row doesn't match the search
+        if (!rowMatchesSearch) {
+            tr[i].classList.remove("highlighted");
+        } else {
+            tr[i].classList.add("highlighted");
         }
-      }
+        }
     }
-  }
+}
 </script>

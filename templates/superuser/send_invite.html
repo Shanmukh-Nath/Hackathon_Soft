@@ -7,7 +7,6 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
             margin: 0;
             padding: 0;
             display: flex;
@@ -17,42 +16,85 @@
         }
 
         .container {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+              position: absolute;
+      margin-top: 20px;
+  top: 10%;
+  left: 5%;
+  -webkit-transform: translate(-50%, -50%);
+          transform: translate(-50%, -50%);
+  margin-bottom: 20px;
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        table, th, td {
-            border: 1px solid #ccc;
-        }
-
-        th, td {
-            padding: 10px;
-            text-align: left;
-        }
-
-        th {
-            background-color: #007BFF;
-            color: #fff;
-        }
+table {
+    left: 10%;
+    position: absolute;
+  width: 900px;
+    text-align: center;
+  border-collapse: collapse;
+  overflow: hidden;
+    border-radius: 30px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+}
+th,
+td {
+  padding: 15px;
+  background-color: rgba(255, 255, 255, 0.2);
+  color: #fff;
+    text-align: center;
+}
+thead th {
+  background-color: #55608f;
+}
+tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+tbody td {
+    align-items: center;
+  position: relative;
+    text-align: center;
+}
+tbody td:hover:before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -9999px;
+  bottom: -9999px;
+  background-color: rgba(255, 255, 255, 0.2);
+  z-index: -1;
+}
+.snd{
+    position: absolute;
+    left: 40%;
+    color: white;
+    font-weight: 800;
+    font-size: 2rem;
+}
 
         .btn {
-            background-color: #007BFF;
-            color: #fff;
+            position: absolute;
+            top: 85%;
+            width: 80%;
+            height: 6%;
+            left: 5%;
+            background-color: white;
+            color: black;
+            font-weight: 800;
+            border-radius: 30px;
+            font-size: 1.5rem;
+            text-align: center;
             border: none;
             padding: 10px 20px;
             cursor: pointer;
+            transition: 0.5s;
         }
-
+        a{
+            text-decoration: none;
+        }
         .btn:hover {
-            background-color: #0056b3;
+            background-color: wheat;
+            color: black;
+
         }
     </style>
 </head>
@@ -66,9 +108,10 @@
 </div>
 {% endfor %}
         {% endif %}
-    <div class="container">
-        <h2>Send Invites</h2>
+
+        <h2 class="snd">Send Invites</h2>
     {% if emails %}
+            <div class="container">
         <table>
             <thead>
                 <tr>
@@ -86,7 +129,8 @@
     {% else %}
         <h4>There are no uninvited emails.</h4>
     {% endif %}
-        <a id="send" href="{% url 'invite_success' %}" class="btn">Send Invitation</a>
+
     </div>
+<a id="send" href="{% url 'invite_success' %}" class="btn">Send Invitation</a>
 </body>
 </html>

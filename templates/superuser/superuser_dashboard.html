@@ -27,6 +27,19 @@
             overflow: hidden; /* Ensure the overlay doesn't overflow */
             height:80%
         }
+        ::-webkit-scrollbar {
+  width: 12px;               /* width of the entire scrollbar */
+}
+
+::-webkit-scrollbar-track {
+  background: none;        /* color of the tracking area */
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(255,255,255,0.2);    /* color of the scroll thumb */
+  border-radius: 20px;       /* roundness of the scroll thumb */ /* creates padding around scroll thumb */
+}
+
 
 .navigation {
 
@@ -94,9 +107,10 @@
     backdrop-filter: blur(10px); /* Apply a blur effect to create the glassmorphic effect */
     border: 1px solid rgba(255, 255, 255, 0.2); /* Add a border for contrast */
             height: 100%;
+            overflow: auto;
         }
         .content-scroll {
-    max-height: 100%; /* Set a maximum height for the scrollable area */
+    max-height: calc(100% - 60px); /* Set a maximum height for the scrollable area */
     overflow: auto; /* Add a scrollbar when content overflows */
 }
 
@@ -476,22 +490,8 @@ function getCookie(name) {
     return cookieValue;
 }
 {#setupEmailValidation(emailField,emailValidOut,emailFeedbackField);#}
- window.onbeforeunload =  function (e) {
 
-            console.log("Here");
-        e.preventDefault();
-        e.returnValue = ''; // This empty string will prompt a confirmation dialog.
-        alert("You did not Logout");
-        // You can customize the message displayed to the user.
-        var confirmationMessage = 'You did not Logout';
-
-        // Some browsers may not show your custom message.
-        (e || window.event).returnValue = confirmationMessage;
-
-        // Return the message to display the confirmation dialog.
-        return confirmationMessage;
-    }
-  function searchTable() {
+function searchTable() {
     var input, filter, table, tr, td, i, txtValue;
     input = document.getElementById("searchInput");
     filter = input.value.toUpperCase();
@@ -499,27 +499,34 @@ function getCookie(name) {
     tr = table.getElementsByTagName("tr");
 
     for (i = 0; i < tr.length; i++) {
-      td = tr[i].getElementsByTagName("td");
-      for (var j = 0; j < td.length; j++) {
-        if (td[j]) {
-          // Check if the current cell contains a hyperlink
-          var hasHyperlink = td[j].querySelector("a") !== null;
+        td = tr[i].getElementsByTagName("td");
+        var rowMatchesSearch = false; // Track if the row matches the search
 
-          if (!hasHyperlink) {
-            txtValue = td[j].textContent || td[j].innerText;
-            if (txtValue.toUpperCase().indexOf(filter) > -1) {
-              td[j].innerHTML = txtValue.replace(
-                new RegExp(filter, "gi"),
-                (match) => `<span class="highlight">${match}</span>`
-              );
-            } else {
-              td[j].innerHTML = txtValue;
+        for (var j = 0; j < td.length; j++) {
+            if (td[j]) {
+                // Check if the current cell contains a hyperlink
+                var hasHyperlink = td[j].querySelector("a") !== null;
+
+                if (!hasHyperlink) {
+                    txtValue = td[j].textContent || td[j].innerText;
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        // Highlight the entire row
+                        tr[i].classList.add("highlighted-row");
+                        rowMatchesSearch = true;
+                        break; // No need to check other cells in this row
+                    }
+                }
             }
-          }
         }
-      }
+
+        // Remove the highlight class if the row doesn't match the search
+        if (!rowMatchesSearch) {
+            tr[i].classList.remove("highlighted");
+        } else {
+            tr[i].classList.add("highlighted");
+        }
     }
-  }
+}
 var span = document.querySelector("span");
 
 span.addEventListener("input", function() {

@@ -75,6 +75,7 @@ class Participant(models.Model):
     is_individual = models.BooleanField()
     team = models.ForeignKey(Team, on_delete=models.CASCADE, null=True, blank=True)
     edited_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    is_checkedin = models.BooleanField(default=False)
 
     def __str__(self):
         return self.first_name
@@ -87,6 +88,17 @@ class Participant(models.Model):
     def decode_id(self,encoded_id):
         import base64
         return base64.b64decode(encoded_id.encode()).decode()
+
+class CheckInOTP(models.Model):
+    participant = models.ForeignKey(Participant, on_delete=models.CASCADE)
+    otp = models.CharField(max_length=6)
+    sent_time = models.DateTimeField(auto_now_add=True)
+    usage_time = models.DateTimeField(null=True, blank=True)
+    is_expired = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"OTP for {self.participant.first_name}"
+
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
