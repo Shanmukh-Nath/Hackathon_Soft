@@ -70,7 +70,7 @@
 }
 
 .navigation ul li a:hover {
-    background-color: #0056b3; /* Change the background color on hover */
+    background-color: rgba(255,255,255,0.2); /* Change the background color on hover */
 }
 .logout-button {
     position: absolute;
@@ -320,13 +320,21 @@
 	 font-family: 'Rig Bold Inline';
 	 src: url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/209981/Rig-BoldInline.otf');
 }
+        .welcome{
+                position: absolute;
+        left: 20%;
+        color: gold;
+            text-align: center;
+        text-shadow: 2px 0 0 BLACK;
+            cursor: none;
+        }
 
     </style>
 </head>
 <body>
     <div class="overlay">
         <div class="navigation">
-    <h2>Welcome, {{ user }}</h2>
+    <h2 class="welcome">Welcome, {{ user }}</h2>
     <ul>
         <li>
             <a href="#" onclick="loadContent('{% url 'add_coordinator' %}')">

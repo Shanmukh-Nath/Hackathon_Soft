@@ -99,6 +99,10 @@ class CheckInOTP(models.Model):
     def __str__(self):
         return f"OTP for {self.participant.first_name}"
 
+class QRCode(models.Model):
+    unique_code = models.CharField(max_length=20, unique=True)
+    participant = models.ForeignKey(Participant, on_delete=models.CASCADE)
+
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
