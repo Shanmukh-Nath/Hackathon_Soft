@@ -130,7 +130,9 @@ tbody td:hover:before {
     <select id="teamFilter" onchange="filterTable()">
         <option value="all">All</option>
         {% for t in teams %}
+            {% if t.team_name != "SOLO" %}
         <option value="{{ t.team_name }}">{{ t.team_name }}</option>
+            {% endif %}
         {% endfor %}
         <!-- Add more options as needed -->
     </select>

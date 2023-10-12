@@ -27,7 +27,7 @@ from django.contrib.auth.models import User
 from .tokens import complex_token_generator
 from .forms import RegistrationForm, SuperuserLoginForm, SuperCoordinatorForm, CoordinatorForm, CoordinatorEditForm, \
     ParticipantEditForm, UserProfileEditForm
-from .models import Participant, Team, Domain, Coordinator, UserProfile, CheckInOTP
+from .models import Participant, Team, Domain, Coordinator, UserProfile, CheckInOTP, State, Meals
 
 
 def send_invitations(request):
@@ -534,16 +534,20 @@ def registration(request):
                             messages.error(request,'You cannot use same details')
                             return redirect('registration')
                         else:
+                            # print(request.POST.get(f'team_member_state_{i}'))
+                            state = State.objects.get(state_name=request.POST.get(f'team_member_state_{i}'))
+                            meal = Meals.objects.get(meal_name=request.POST.get(f'team_member_meals_{i}'))
                             team_member = Participant(
                                 first_name=request.POST.get(f'team_member_first_name_{i}'),
                                 last_name=request.POST.get(f'team_member_last_name_{i}'),
                                 date_of_birth=request.POST.get(f'team_member_date_of_birth_{i}'),
                                 email=request.POST.get(f'team_member_email_{i}'),
                                 mobile=request.POST.get(f'team_member_mobile_{i}'),
-                                state=request.POST.get(f'team_member_state_{i}'),
+                                state=state.id,
                                 college=request.POST.get(f'team_member_college_{i}'),
                                 aadhar=request.POST.get(f'team_member_aadhar_{i}'),
                                 domain_of_interest=participant.domain_of_interest,
+                                meals = meal.id,
                                 is_individual=False,
                                 team=team
                             )
@@ -553,7 +557,7 @@ def registration(request):
                         participant.delete()
                         team.delete()
                         messages.error(request,"You cannot use same details in form, please check the data of these unique fields - Email, Mobile, Aadhar.")
-                        return redirect('registration')
+                        return redirect('coordinator_login')
                     send_reg_success(request,participant)
                     return redirect('success')
 

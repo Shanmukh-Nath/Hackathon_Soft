@@ -24,7 +24,7 @@
             display: flex;
             position: absolute;
             padding: 10px;
-            left: 30%;
+            left: 90%;
             border-radius: 10px;
             box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
         }
@@ -94,7 +94,7 @@
 
         .extra {
             position: absolute;
-            top: 1%;
+            top: 10%;
             left: 10%;
             background: blue;
         }
@@ -192,13 +192,17 @@
                     <label for="domain_of_interest">Domain</label>
                     {{ form.domain_of_interest }}
                 </div>
+                <div class="form-group">
+                    <label for="meals">Meals</label>
+                    {{ form.meals }}
+                </div>
+                <div class="form-group">
+                    <label for="participant_type">Type</label>
+                    {{ form.participant_type }}
+                </div>
+                <div id="team-members"></div>
 
-        </div>
-    </div>
-</div>
-
-<div id="team-members"></div>
-<div class="extra">
+                <div class="extra">
     <input type="radio" name="is_individual" value="1" id="individual_radio" checked> Individual
     <input type="radio" name="is_individual" value="0" id="team_radio"> Team
     <div id="team-size">
@@ -208,13 +212,20 @@
             <option value="4">4</option>
             <option value="5">5</option>
         </select>
-        <div id="team-name"></div>
+
     </div>
+    <div id="team-name"></div>
     <div id="submit-button">
         <input type="submit" value="Submit">
     </div>
 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+
+
 <script>
 function adjustMainFormPosition() {
     const teamMembers = document.querySelectorAll('.form-container');
@@ -320,9 +331,6 @@ function adjustMainFormPosition() {
 
 
 
-
-
-
     function updateTeamMembers() {
         const teamSize = parseInt(document.getElementById('team_size_select').value);
         const teamMembersDiv = document.getElementById('team-members');
@@ -399,11 +407,46 @@ function adjustMainFormPosition() {
                 </div>
                 <p class="text-sm text-success mobile-valid-out"></p><br>
                 <label for="team_member_state_${i}">State:</label>
-                <input type="text" name="team_member_state_${i}"><br>
+                <select name="team_member_state_${i}">
+                    <option value="Andhra Pradesh">Andhra Pradesh</option>
+                    <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+                    <option value="Assam">Assam</option>
+                    <option value="Bihar">Bihar</option>
+                    <option value="Chhattisgarh">Chhattisgarh</option>
+                    <option value="Goa">Goa</option>
+                    <option value="Gujarat">Gujarat</option>
+                    <option value="Haryana">Haryana</option>
+                    <option value="Himachal Pradesh">Himachal Pradesh</option>
+                    <option value="Jharkhand">Jharkhand</option>
+                    <option value="Karnataka">Karnataka</option>
+                    <option value="Kerala">Kerala</option>
+                    <option value="Madhya Pradesh">Madhya Pradesh</option>
+                    <option value="Maharashtra">Maharashtra</option>
+                    <option value="Manipur">Manipur</option>
+                    <option value="Meghalaya">Meghalaya</option>
+                    <option value="Mizoram">Mizoram</option>
+                    <option value="Nagaland">Nagaland</option>
+                    <option value="Odisha">Odisha</option>
+                    <option value="Punjab">Punjab</option>
+                    <option value="Rajasthan">Rajasthan</option>
+                    <option value="Sikkim">Sikkim</option>
+                    <option value="Tamil Nadu">Tamil Nadu</option>
+                    <option value="Telangana">Telangana</option>
+                    <option value="Tripura">Tripura</option>
+                    <option value="Uttarakhand">Uttarakhand</option>
+                    <option value="Uttar Pradesh">Uttar Pradesh</option>
+                    <option value="West Bengal">West Bengal</option>
+                </select>
                 <label for="team_member_college_${i}">College:</label>
                 <input type="text" name="team_member_college_${i}"><br>
                 <label for="team_member_aadhar_${i}">Aadhar:</label>
                 <input type="text" name="team_member_aadhar_${i}"><br>
+                <label>Meals:</label>
+                <select name="team_member_meals_${i}">
+                    <option value="Vegetarian">Vegetarian</option>
+                    <option value="Non-Vegetarian">Non-Vegetarian</option>
+                </select>
+
             `;
             // Set the 'required' attribute for each input element
             const inputElements = memberDiv.querySelectorAll('input');
