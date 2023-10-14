@@ -21,4 +21,5 @@ from form import urls
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('',include(urls.urlpatterns)),
+    path('api/',include( 'form.api.urls'))
 ]
