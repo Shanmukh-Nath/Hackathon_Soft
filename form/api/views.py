@@ -10,7 +10,7 @@ def getRoutes(request):
     routes = [
         'GET /api/',
         'GET /api/participants',
-        'GET /api/participant/<int:key>'
+
     ]
     return Response(routes)
 
@@ -21,8 +21,8 @@ def getParticipants(request):
     serializer = ParticipantSerializer(participants, many=True)
     return Response(serializer.data)
 
-@api_view(['GET'])
-def getParticipants_withid(request,pk):
-    participants = Participant.objects.get(id=pk)
-    serializer = ParticipantSerializer(participants, many=True)
-    return Response(serializer.data)
+# @api_view(['GET'])
+# def getParticipants_withid(request,pk):
+#     participants = Participant.objects.get(id=pk)
+#     serializer = ParticipantSerializer(participants, many=True)
+#     return Response(serializer.data)
