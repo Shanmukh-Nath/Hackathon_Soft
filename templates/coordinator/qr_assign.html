@@ -1,0 +1,268 @@
+<style>
+
+  .tick {
+    color: green;
+    font-weight: bold;
+  }
+
+  .cross {
+    color: red;
+    font-weight: bold;
+  }
+  .highlight {
+    background-color: yellow;
+  }
+  .container {
+  position: absolute;
+  top: 10%;
+      margin-top: 20px;
+  left: 5%;
+  -webkit-transform: translate(-50%, -50%);
+          transform: translate(-50%, -50%);
+}
+table {
+    left: 10%;
+    position: absolute;
+  width: 900px;
+  border-collapse: collapse;
+  overflow: hidden;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+}
+th{
+      padding: 15px;
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+td {
+  padding: 15px;
+  background-color: rgba(255, 255, 255, 0.2);
+  color: black;
+}
+th {
+  text-align: left;
+}
+thead th {
+  background-color: rgba(247,14,101,0.6);
+}
+tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+tbody td {
+  position: relative;
+}
+tbody td:hover:before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -9999px;
+  bottom: -9999px;
+  background-color: rgba(255, 255, 255, 0.2);
+  z-index: -1;
+}
+  input{
+      text-align: center;
+      color: purple;
+      font-weight: 800;
+      font-size: 1rem;
+      width: 45%;
+      height: 7%;
+      position: absolute;
+      left: 24%;
+      background: none;
+      border:none;
+      border-bottom: 4px solid purple;
+      transition: 0.5s;
+      border-radius: 10px;
+  }
+  input:hover{
+      background: rgba(255,255,255,0.2);
+      border-bottom: none;
+      border-top: none;
+
+  }
+  input:hover::placeholder{
+      opacity: 0.5;
+  }
+  input:focus::placeholder{
+      color: transparent;
+  }
+
+  ::placeholder{
+      font-size: 1rem;
+      color: purple;
+      font-weight: 800;
+      opacity: 0.9;
+      text-align: center;
+  }
+  .filter-container {
+    margin-top: 10px;
+}
+
+.filter-container label {
+    margin-right: 10px;
+    font-weight: bold;
+#teamFilter{
+    background: rgba(255,255,255,0.2);
+    border: none;
+}
+}
+.alert.alert-danger {
+    position: absolute;
+    left: 73%;
+    margin-bottom: 15px;
+    background: rgba(255,0,0,0.2);
+    padding: 10px;
+    border-radius: 10px;
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+}
+.alert.alert-success {
+    position: absolute;
+    left: 73%;
+    margin-bottom: 15px;
+    background: rgba(0,255,0,0.2);
+    padding: 10px;
+    border-radius: 10px;
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.filter-container select {
+    padding: 5px;
+    border: none;
+    background: rgba(255,255,255,0.2);
+    border-radius: 5px;
+}
+</style>
+        {% if messages %}
+            {% for message in messages %}
+<div class="container-fluid p-0">
+  <div class="alert {{ message.tags }}" role="alert" >
+    {{ message }}
+  </div>
+</div>
+{% endfor %}
+        {% endif %}
+<input type="text" id="searchInput" onkeyup="searchTable()" placeholder="Search for participants..." />
+<div class="filter-container">
+    <label for="teamFilter">Filter by Team:</label>
+    <select id="teamFilter" onchange="filterTable()">
+        <option value="all">All</option>
+        {% for t in teams %}
+        <option value="{{ t.team_name }}">{{ t.team_name }}</option>
+        {% endfor %}
+        <!-- Add more options as needed -->
+    </select>
+</div>
+<div class="container">
+<table>
+  <thead>
+    <tr>
+      <th>Email</th>
+      <th>First Name</th>
+      <th>State</th>
+      <th>College</th>
+      <th>Domain</th>
+      <th>Team Name</th>
+        <th>Action</th>
+
+      <!-- Add more boolean attributes as needed -->
+    </tr>
+  </thead>
+  <tbody>
+    {% for coordinator in coordinators %}
+    <tr>
+      <td>{{ coordinator.email }}</td>
+      <td>{{ coordinator.first_name }}</td>
+        <td>{{ coordinator.state }}</td>
+        <td>{{ coordinator.college }}</td>
+        <td>{{ coordinator.domain_of_interest.domain_name }}</td>
+        <td>{{ coordinator.team.team_name }}</td>
+
+
+      <!-- Add more boolean attributes as needed -->
+    <td>
+        <form  method="post">
+          {% csrf_token %}
+          <a href="{% url 'part_qr_assign' coordinator.encoded_id %}"><img width="64" height="64" src="https://img.icons8.com/ios/50/qr-code--v1.png" alt="qr-code--v1"/></a>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+<script>
+function searchTable() {
+    var input, filter, table, tr, td, i, txtValue;
+    input = document.getElementById("searchInput");
+    filter = input.value.toUpperCase();
+    table = document.querySelector("table");
+    tr = table.getElementsByTagName("tr");
+
+    for (i = 0; i < tr.length; i++) {
+      td = tr[i].getElementsByTagName("td");
+      for (var j = 0; j < td.length; j++) {
+        if (td[j]) {
+          // Check if the current cell contains a hyperlink
+          var hasHyperlink = td[j].querySelector("a") !== null;
+
+          if (!hasHyperlink) {
+            txtValue = td[j].textContent || td[j].innerText;
+            if (txtValue.toUpperCase().indexOf(filter) > -1) {
+              td[j].innerHTML = txtValue.replace(
+                new RegExp(filter, "gi"),
+                (match) => `<span class="highlight">${match}</span>`
+              );
+            } else {
+              td[j].innerHTML = txtValue;
+            }
+          }
+        }
+      }
+    }
+  }
+function filterTable() {
+    var input, filter, table, tr, td, i, txtValue;
+    input = document.getElementById("searchInput");
+    filter = input.value.toUpperCase();
+    table = document.querySelector("table");
+    tr = table.getElementsByTagName("tr");
+
+    // Get the selected team filter value
+    var teamFilter = document.getElementById("teamFilter").value;
+
+    for (i = 0; i < tr.length; i++) {
+        td = tr[i].getElementsByTagName("td");
+
+        // Check if there are enough cells in the row
+        if (td.length > 5) {
+            var teamColumn = td[5]; // Assuming the team column is the sixth column (index 5)
+
+            // Check if the current row matches the search input and team filter
+            var matchesSearch = false;
+            var matchesTeamFilter = teamFilter === "all" || teamColumn.textContent.trim() === teamFilter;
+
+            for (var j = 0; j < td.length; j++) {
+                if (td[j]) {
+                    txtValue = td[j].textContent || td[j].innerText;
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        matchesSearch = true;
+                        break;
+                    }
+                }
+            }
+
+            // Hide or show the row based on filter criteria
+            if (matchesSearch && matchesTeamFilter) {
+                tr[i].style.display = "";
+            } else {
+                tr[i].style.display = "none";
+            }
+        }
+    }
+}
+</script>

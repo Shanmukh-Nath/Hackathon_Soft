@@ -93,6 +93,7 @@ class Participant(models.Model):
     registered_date = models.DateField(auto_now_add=True,blank=True,null=True)
     meals = models.ForeignKey(Meals,on_delete=models.CASCADE,blank=True,null=True)
     participant_type = models.CharField(max_length=50,blank=True,null=True)
+    is_qrassigned = models.BooleanField(default=False)
 
     def __str__(self):
         return self.first_name

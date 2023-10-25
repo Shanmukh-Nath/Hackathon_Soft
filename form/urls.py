@@ -38,5 +38,8 @@ urlpatterns = [
     path('coordinator/edit_participant/<str:encoded_id>', views.edit_participant_coordinator, name='edit_participant_coordinator'),
     path('coordinator/checkin/',views.part_check_in,name='part_checkin'),
     path('coordinator/checkin_list/', views.part_check_in_success, name='part_checkin_success'),
+    path('coordinator/qr_assign/', views.part_qr_list, name='part_qr_assign_list'),
+    path('coordinator/qr_assign/<str:encoded_id>', views.qr_scan, name='part_qr_assign'),
+    path('coordinator/qr_check/', views.part_qr_check, name='part_qr_success_list'),
     path('verify_otp/<str:encoded_id>/', views.verify_otp, name='verify_otp'),
 ]

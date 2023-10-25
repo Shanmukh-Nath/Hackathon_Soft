@@ -27,7 +27,7 @@ from django.contrib.auth.models import User
 from .tokens import complex_token_generator
 from .forms import RegistrationForm, SuperuserLoginForm, SuperCoordinatorForm, CoordinatorForm, CoordinatorEditForm, \
     ParticipantEditForm, UserProfileEditForm
-from .models import Participant, Team, Domain, Coordinator, UserProfile, CheckInOTP, State, Meals
+from .models import Participant, Team, Domain, Coordinator, UserProfile, CheckInOTP, State, Meals, QRCode
 
 
 def send_invitations(request):
@@ -399,6 +399,61 @@ def part_check_in(request):
 def part_check_in_success(request):
     coordinator = Participant.objects.filter(is_checkedin=True)
     return render(request,'coordinator/success_check_in.html',{'coordinators':coordinator})
+
+
+@login_required(login_url='/coordinator/login/')
+def part_qr_success(request):
+    coordinator = QRCode.objects.all()
+    return render(request,'coordinator/qr_check.html',{'coordinators':coordinator})
+
+
+@login_required(login_url='/coordinator/login/')
+def part_qr_list(request):
+    coordinator = Participant.objects.filter(is_qrassigned=False)
+    return render(request,'coordinator/qr_assign.html',{'coordinators':coordinator})
+
+
+@login_required(login_url='/coordinator/login/')
+def part_qr_check(request):
+    coordinator = Participant.objects.filter(is_qrassigned=True)
+    return render(request,'coordinator/qr_check.html',{'coordinators':coordinator})
+
+@login_required(login_url='/coordinator/login/')
+def qr_scan(request,encoded_id):
+    global participant
+    try:
+        participant_id = int(base64.b64decode(encoded_id.encode()).decode())
+        participant = Participant.objects.get(id=participant_id)
+
+        if request.method == 'POST':
+            print(request.POST)
+            qr_code = request.POST.get('qrcode')
+            print(qr_code)
+
+            if not qr_code:
+                messages.error(request, "QR Code is required.")
+            else:
+                # Check if the QR code is valid or exists in your system
+                # You should implement the logic to verify and assign the QR code to the participant
+                if 1==1:
+                    qr = QRCode.objects.create(unique_code=qr_code,participant_id=participant.id)
+                    qr.save()
+                    participant.is_qrassigned = True
+                    participant.save()
+
+                    messages.success(request, "QR code assigned successfully.")
+                    return redirect('coordinator_dashboard')
+                else:
+                    messages.error(request, "Invalid QR Code.")
+
+    except Participant.DoesNotExist:
+        messages.error(request, "Participant not found.")
+
+    return render(request, 'coordinator/qr_scan_part.html', {'part': participant})
+
+@login_required(login_url='/coordinator/login/')
+def is_valid_qr_code(request,qrcode):
+        return True
 
 
 def generate_otp(participant):
