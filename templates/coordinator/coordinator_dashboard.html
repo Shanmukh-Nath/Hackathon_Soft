@@ -520,35 +520,40 @@ function getCookie(name) {
         // Return the message to display the confirmation dialog.
         return confirmationMessage;
     }
-  function searchTable() {
-    var input, filter, table, tr, td, i, txtValue;
+function searchTable() {
+    var input, filter, table, tr, td, i, j, txtValue, matchFound;
     input = document.getElementById("searchInput");
     filter = input.value.toUpperCase();
     table = document.querySelector("table");
     tr = table.getElementsByTagName("tr");
 
     for (i = 0; i < tr.length; i++) {
-      td = tr[i].getElementsByTagName("td");
-      for (var j = 0; j < td.length; j++) {
-        if (td[j]) {
-          // Check if the current cell contains a hyperlink
-          var hasHyperlink = td[j].querySelector("a,form,button,img") !== null;
-
-          if (!hasHyperlink) {
-            txtValue = td[j].textContent || td[j].innerText;
-            if (txtValue.toUpperCase().indexOf(filter) > -1) {
-              td[j].innerHTML = txtValue.replace(
-                new RegExp(filter, "gi"),
-                (match) => `<span class="highlight">${match}</span>`
-              );
-            } else {
-              td[j].innerHTML = txtValue;
-            }
-          }
+        if (i === 0) {
+            continue; // Skip the first row (usually the heading row)
         }
-      }
+        matchFound = false;
+        td = tr[i].getElementsByTagName("td");
+        for (j = 0; j < td.length; j++) {
+            if (td[j]) {
+                var hasHyperlink = td[j].querySelector("a, button, form") !== null;
+                if (!hasHyperlink) {
+                    txtValue = td[j].textContent || td[j].innerText;
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        matchFound = true;
+                        break;
+                    }
+                }
+            }
+        }
+        if (matchFound) {
+            tr[i].style.display = "";
+        } else {
+            tr[i].style.display = "none";
+        }
     }
-  }
+}
+
+
 var span = document.querySelector("span");
 
 span.addEventListener("input", function() {

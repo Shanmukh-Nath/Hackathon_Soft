@@ -30,7 +30,7 @@ class CoordinatorForm(forms.ModelForm):
 class ParticipantEditForm(forms.ModelForm):
     class Meta:
         model = Participant
-        exclude = ['edited_by','is_individual','mobile','aadhar']  # Include all fields from the Participant model
+        exclude = ['edited_by','is_individual','mobile','aadhar','is_checkedin','participant_type','is_qrassigned']  # Include all fields from the Participant model
         widgets = {
             'date_of_birth': forms.DateInput(attrs={'type': 'date'}),
         }

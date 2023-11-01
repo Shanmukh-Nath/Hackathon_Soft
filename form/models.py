@@ -76,6 +76,13 @@ class Team(models.Model):
     def __str__(self):
         return self.team_name
 
+
+class ParticipantType(models.Model):
+    type = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.type
+
 class Participant(models.Model):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
@@ -92,7 +99,7 @@ class Participant(models.Model):
     is_checkedin = models.BooleanField(default=False)
     registered_date = models.DateField(auto_now_add=True,blank=True,null=True)
     meals = models.ForeignKey(Meals,on_delete=models.CASCADE,blank=True,null=True)
-    participant_type = models.CharField(max_length=50,blank=True,null=True)
+    participant_type = models.ForeignKey(ParticipantType,on_delete=models.CASCADE,blank=True,null=True)
     is_qrassigned = models.BooleanField(default=False)
 
     def __str__(self):

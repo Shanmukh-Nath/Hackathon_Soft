@@ -22,10 +22,12 @@
     <orderEntry type="library" name="bootstrap" level="application" />
     <orderEntry type="library" name="particlesjs" level="application" />
     <orderEntry type="library" name="tsparticles" level="application" />
-    <orderEntry type="library" name="quagga" level="application" />
     <orderEntry type="library" name="jquery" level="application" />
-    <orderEntry type="library" name="html5-qrcode" level="application" />
+    <orderEntry type="library" name="quagga" level="application" />
     <orderEntry type="library" name="qrcode" level="application" />
+    <orderEntry type="library" name="html5-qrcode" level="application" />
+    <orderEntry type="library" name="three.js" level="application" />
+    <orderEntry type="library" name="three" level="application" />
   </component>
   <component name="TemplatesService">
     <option name="TEMPLATE_CONFIGURATION" value="Django" />

@@ -1,17 +1,83 @@
+{% load static %}
+<title>Edit Participant {{ p.first_name }}</title>
+<style>
+    body{
+        background: url("{% static 'img/edit_participant.jpg' %}");
+        background-size: cover;
+        background-repeat: no-repeat;
+    }
+      /* Style the form container */
+      .form-container {
+        width: 80%;
+        margin: 0 auto;
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      /* Style the form fields */
+      .form-control {
+        margin: 10px 0;
+      }
+
+      /* Style the form labels */
+      .form-control label {
+        display: block;
+        font-weight: bold;
+      }
+
+      /* Style the form input fields */
+      .form-control input[type="text"],
+      .form-control input[type="date"],
+      .form-control input[type='email'],
+      .form-control select{
+        width: 100%;
+        padding: 10px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: 5px;
+        background: none;
+        backdrop-filter: blur(5px);
+        transition: background 0.3s;
+      }
+
+      .form-control input[type="text"]:focus,
+      .form-control input[type="date"]:focus {
+        background: none;
+      }
+
+      /* Style the form submit button */
+      .form-control button[type="submit"] {
+        padding: 10px 20px;
+        background: #3498db;
+        border: none;
+        color: #fff;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      .form-control button[type="submit"]:hover {
+        background: #2980b9;
+      }
+      #name{
+          background: -webkit-linear-gradient(rgb(188, 12, 241), rgb(212, 4, 4));
+          -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+      }
+   </style>
+
 <!-- edit_coordinator.html -->
-        {% if messages %}
-            {% for message in messages %}
-<div class="container-fluid p-0">
-  <div class="alert {{ message.tags }}" role="alert" >
-    {{ message }}
-  </div>
-</div>
-{% endfor %}
-        {% endif %}
-<h2>Edit Coordinator</h2>
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit" class="btn btn-primary">Save Changes</button>
-  <a href="{% url 'coordinator_dashboard' %}" class="btn btn-secondary">Cancel</a>
-</form>
+ <body>
+   <div class="form-container">
+       <h2>Edit Participant</h2><h2 id="name">{{ p.first_name }}</h2>
+      <form method="post" class="form-control">
+         {% csrf_token %}
+          {{ form.as_p }}
+         <button type="submit">Submit</button>
+      </form>
+       <a href="{% url 'coordinator_dashboard' %}"><button>Cancel</button></a>
+   </div>
+</body>
+</html>

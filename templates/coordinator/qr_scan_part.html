@@ -6,6 +6,34 @@
    <meta http-equiv="X-UA-Compatible" content="IE=edge">
    <meta name="viewport" content="width=device-width, initial-scale=1.0">
    <title>Document</title>
+    <style>
+        .html5-qrcode-element{
+            width: 70%;
+            height: 30%;
+            color: blue;
+
+        }
+        #cancel{
+                padding: 0.5rem;
+    position: absolute;
+    left: 40%;
+    top: 80%;
+            font-family: poppins, sans-serif;
+    width: 20%;
+            text-transform: uppercase;
+            font-weight: 400;
+            color: rgba(0,0,0,0.6);
+    font-size: 1.5rem;
+    border: 3px solid rgb(255,163,102);
+    background: none;
+    border-radius: 1.5rem;
+            transition: 0.5s ease;
+        }
+        #cancel:hover{
+            cursor: pointer;
+            background: rgb(255,163,103);
+        }
+    </style>
 </head>
 <body>
 
@@ -33,10 +61,11 @@
     <div id="result"></div>
     <div id="buttons">
         <button id="confirm">Confirm</button>
-        <button id="cancel">Cancel</button>
+
     </div>
         <input type="hidden" id="qrcode" name="qrcode" value="">
     </form>
+    <a href="{% url 'coordinator_dashboard' %}"><button id="cancel">Cancel</button></a>
 </main>
 
 

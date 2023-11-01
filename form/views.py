@@ -30,6 +30,9 @@ from .forms import RegistrationForm, SuperuserLoginForm, SuperCoordinatorForm, C
 from .models import Participant, Team, Domain, Coordinator, UserProfile, CheckInOTP, State, Meals, QRCode
 
 
+
+
+
 def send_invitations(request):
     coordinators = Coordinator.objects.all()
     for coordinator in coordinators:
@@ -201,7 +204,7 @@ def edit_participant_coordinator(request, encoded_id):
     else:
         form = ParticipantEditForm(instance=participant)
 
-    return render(request, 'coordinator/edit_participant.html', {'form': form})
+    return render(request, 'coordinator/edit_participant.html', {'form': form,'p':participant})
 
 
 @login_required(login_url='/coordinator/login')
@@ -533,6 +536,7 @@ def verify_otp(request, encoded_id):
     messages.success(request, "OTP Successfully Sent")
 
     return render(request, 'coordinator/checkin_otp_verification.html', {'participant': participant, 'otp': otp})
+
 
 
 
