@@ -1,0 +1,741 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Registration Form</title>
+    <style>
+    body {
+            margin: 0;
+    font-family: 'Arial', sans-serif;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+
+    }
+    .extra {
+    position: absolute;
+    top: 10%;
+    right: 0;
+    background: #007bff;
+    padding: 20px;
+    border-radius: 10px;
+    color: white;
+}
+
+
+    .main-form {
+display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-radius: 10px;
+    color: white;
+    max-width: 800px;
+    width: 100%;
+    transition: transform 0.3s ease;
+        z-index: 1;
+    }
+
+    .form-container {
+background: red;
+    padding: 15px;
+    margin: 10px;
+    width: 100%;
+    top: 0;
+    display: flex;
+    left: 15px;
+    max-width: 400px;
+    position: absolute;
+    z-index: 1;
+    scale: 0.85;
+    transform: translateX(100%);
+    transition: transform 0.5s ease;
+    flex-direction: column;
+    }
+
+    .form-container.new-member {
+    opacity: 0;
+        margin-left: 10% ;
+    transform: scale(0.85);
+    display: inline-block; /* Change this to inline-block */
+    margin-right: 20px; /* Add some margin to separate them */
+    vertical-align: top; /* Align them to the top of the container */
+    transition: transform 0.5s ease;
+    }
+    canvas{
+        top: 0;
+        left: 0;
+        position: absolute;
+        z-index: -1;
+    }
+    form {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    label {
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="date"],
+    select {
+        padding: 12px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-size: 16px;
+    }
+
+    .radio-options {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .radio-options label {
+        background-color: #fff;
+        color: yellowgreen;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-right: 10px;
+        transition: background-color 0.3s, color 0.3s;
+    }
+
+    .radio-options input[type="radio"] {
+        display: none;
+    }
+
+    .radio-options input[type="radio"]:checked + label {
+        background-color: #007b;
+        color: #fff;
+    }
+
+    #team-size select,
+    #team-name input[type="text"] {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-size: 16px;
+        margin-bottom: 20px;
+    }
+
+    #submit-button {
+        text-align: center;
+    }
+
+    #submit-button input[type="submit"] {
+        background: #fff;
+        color: #007bff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s, color 0.3s;
+    }
+
+    #submit-button input[type="submit"]:hover {
+        background-color: #007bff;
+        color: #fff;
+    }
+
+    .alert {
+        padding: 10px;
+        margin-bottom: 20px;
+        border-radius: 5px;
+    }
+
+    .alert-success {
+        background-color: #4CAF50;
+    }
+
+    .alert-danger {
+        background-color: #f44336;
+    }
+
+    .text-success {
+        color: #4CAF50;
+    }
+
+    .text-danger {
+        color: #f44336;
+    }
+
+    input[type='submit'] {
+        width: 40%;
+        color: blue;
+        background: white;
+        height: 50%;
+        left: 30%;
+        position: absolute;
+    }
+</style>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/ConvolutionShader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+</head>
+
+<body>
+<h1 style="text-align: center;color: white;">Registration Form</h1>
+<form method="post">
+<div class="main-form">
+    <div class="form-container">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="container-fluid p-0">
+                    <div class="alert {{ message.tags }}" role="alert">
+                        {{ message }}
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+        <div class="form">
+
+                {% csrf_token %}
+                <h3 id="team_1" style="display: none">Team Member 1</h3>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    {{ form.email }}
+                                    <div class="email-feedback invalid-feedback" style="display: none">
+                    <p></p>
+
+                </div>
+                    <p class="text-sm text-success email-valid-out"></p>
+                </div>
+                <div class="form-group">
+                    <label for="mobile">Mobile</label>
+                    {{ form.mobile }}
+                                    <div class="mobile-feedback invalid-feedback" style="display: none">
+                    <p></p>
+
+                </div>
+                    <p class="text-sm text-success mobile-valid-out"></p>
+                </div>
+                <div class="form-group">
+                    <label for="first_name">First Name</label>
+                    {{ form.first_name }}
+                </div>
+                <div class="form-group">
+                    <label for="last_name">Last Name</label>
+                    {{ form.last_name }}
+                </div>
+                <div class="form-group">
+                    <label for="date_of_birth">Date of Birth</label>
+                    {{ form.date_of_birth }}
+                </div>
+                <div class="form-group">
+                    <label for="college">College</label>
+                    {{ form.college }}
+                </div>
+                <div class="form-group">
+                    <label for="state">State</label>
+                    {{ form.state }}
+                </div>
+                <div class="form-group">
+                    <label for="aadhar">Aadhar</label>
+                    {{ form.aadhar }}
+                </div>
+                <div class="form-group">
+                    <label for="domain_of_interest">Domain</label>
+                    {{ form.domain_of_interest }}
+                </div>
+                <div class="form-group">
+                    <label for="meals">Meals</label>
+                    {{ form.meals }}
+                </div>
+                <div class="form-group">
+                    <label for="participant_type">Type</label>
+                    {{ form.participant_type }}
+                </div>
+
+
+                <div class="extra">
+
+    <div class="radio-options">
+        <input type="radio" name="is_individual" value="1" id="individual_radio" checked>
+        <label for="individual_radio">Individual</label>
+
+        <input type="radio" name="is_individual" value="0" id="team_radio">
+        <label for="team_radio">Team</label>
+    </div>
+
+
+    <div id="team-size">
+        <label for="team_size">Team Size:</label>
+        <select name="team_size" id="team_size_select">
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+        </select>
+    </div>
+
+    <div id="team-name">
+        <label for="team_name">Team Name:</label>
+        <input type="text" name="team_name" required>
+    </div>
+
+    <div id="submit-button">
+        <input type="submit" value="Submit">
+    </div>
+
+</div>
+            <div id="team-members"></div>
+        </div>
+    </div>
+
+        </div>
+
+</form>
+<div>
+        <canvas class="webgl"></canvas>
+</div>
+
+
+
+<script>
+{#  THREEJS Background Scene  #}
+
+let scene;
+let camera;
+let renderer;
+const canvas = document.getElementsByTagName("canvas")[0];
+scene = new THREE.Scene();
+const fov = 45;
+const aspect = window.innerWidth / window.innerHeight;
+const near = 0.1;
+const far = 1000;
+
+//default renderer
+renderer = new THREE.WebGLRenderer({
+  canvas: canvas,
+  antialias: true,
+});
+renderer.autoClear = false;
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(window.devicePixelRatio ? window.devicePixelRatio : 1);
+renderer.setClearColor(0x000000, 0.0);
+document.body.appendChild(renderer.domElement);
+
+//camera
+camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+
+
+const controls = new THREE.OrbitControls(camera,renderer.domElement);
+
+camera.position.set(0,0,10);
+controls.target.set(0,0,0);
+controls.minDistance = 2;
+controls.maxDistance = 50;
+
+scene.add(camera);
+//bloom renderer
+const renderScene = new THREE.RenderPass(scene, camera);
+const bloomPass = new THREE.UnrealBloomPass(
+  new THREE.Vector2(window.innerWidth, window.innerHeight),
+  1.5,
+  0.4,
+  0.85
+);
+bloomPass.threshold = 0;
+bloomPass.strength = 2; //intensity of glow
+bloomPass.radius = 0;
+const bloomComposer = new THREE.EffectComposer(renderer);
+bloomComposer.setSize(window.innerWidth, window.innerHeight);
+bloomComposer.renderToScreen = true;
+bloomComposer.addPass(renderScene);
+bloomComposer.addPass(bloomPass);
+
+// galaxy geometry
+const starGeometry = new THREE.SphereGeometry(80, 64, 64);
+
+// galaxy material
+const starMaterial = new THREE.MeshBasicMaterial({
+  map: THREE.ImageUtils.loadTexture("{% static 'img/galaxy1.png' %}"),
+  side: THREE.BackSide,
+  transparent: true,
+});
+
+// galaxy mesh
+const starMesh = new THREE.Mesh(starGeometry, starMaterial);
+starMesh.layers.set(1);
+scene.add(starMesh);
+
+//ambient light
+const ambientlight = new THREE.AmbientLight(0xffffff, 1);
+scene.add(ambientlight);
+
+//resize listner
+window.addEventListener(
+  "resize",
+  () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    bloomComposer.setSize(window.innerWidth, window.innerHeight);
+  },
+  false
+);
+
+//animation loop
+const animate = () => {
+  requestAnimationFrame(animate);
+  controls.update();
+  starMesh.rotation.y += 0.0003;
+  camera.layers.set(1);
+  bloomComposer.render();
+};
+
+animate();
+
+
+
+{#  End  #}
+function adjustMainFormPosition() {
+    const teamMembers = document.querySelectorAll('.form-container');
+    const mainForm = document.querySelector('.main-form');
+    const maxOffset = 20; // Set your desired maximum offset percentage
+    if (teamMembers.length === 1) {
+        mainForm.style.transform = 'translateX(0)';// Move the main form to the left
+    } else {
+        const offset = Math.min(teamMembers.length * 100, maxOffset) + '%'; // Calculate the offset but limit it to the maximum
+        mainForm.style.transform = 'translateX(-' + offset + ')'; // Move the main form to the left
+    }
+}
+    document.getElementById('team_radio').addEventListener('click', function() {
+        document.getElementById('team-name').style.display = 'block';
+        {#document.querySelector('.main-form').style.transform = 'translateX(-100%)';#}
+        document.getElementById('team-size').style.display = 'block';
+
+        updateTeamMembers();
+        adjustMainFormPosition();
+    });
+
+    document.getElementById('individual_radio').addEventListener('click', function() {
+        {#document.querySelector('.main-form').style.transform = 'translateX(0)';#}
+        document.getElementById('team-size').style.display = 'none';
+                document.getElementById('team_1').style.display = 'none';
+        document.getElementById('team-name').style.display = 'none';
+        // Clear previously added team member forms
+        const teamMembersDiv = document.getElementById('team-members');
+        while (teamMembersDiv.firstChild) {
+            teamMembersDiv.removeChild(teamMembersDiv.firstChild);
+        }
+        adjustMainFormPosition();
+    });
+
+    document.getElementById('team_size_select').addEventListener('change', function() {
+        adjustMainFormPosition();
+        updateTeamMembers();
+    });
+                function setupEmailValidation(emailField, emailValidOut, emailFeedbackField) {
+        emailField.addEventListener('keyup', (e) => {
+            const emailValue = e.target.value;
+            emailValidOut.style.display = 'block';
+            emailField.classList.remove('is-invalid');
+            emailFeedbackField.style.display = 'none';
+
+            if (emailValue.length > 0) {
+                emailValidOut.textContent = `Checking Email ${emailValue}`;
+                fetch('email-validate/', {
+                    body: JSON.stringify({ email: emailValue }),
+                    method: "POST",
+                    credentials: "same-origin",
+                    headers: {
+                        "X-CSRFToken": getCookie("csrftoken"),
+                        "Accept": "application/json",
+                        "Content-Type": "application/json"
+                    },
+                })
+                .then((res) => res.json())
+                .then(data => {
+                    emailValidOut.style.display = 'none';
+                    if (data.email_error) {
+                        emailField.classList.add('is-invalid');
+                        emailFeedbackField.style.display = 'block';
+                        emailFeedbackField.innerHTML = `<p>${data.email_error}</p>`;
+                    }
+                });
+            }
+        });
+    }
+
+    // Mobile Validation
+    function setupMobileValidation(mobileField, mobileValidOut, mobileFeedbackField) {
+        mobileField.addEventListener('keyup', (e) => {
+            const mobileValue = e.target.value;
+            mobileValidOut.style.display = 'block';
+            mobileField.classList.remove('is-invalid');
+            mobileFeedbackField.style.display = 'none';
+
+            if (mobileValue.length > 0) {
+                mobileValidOut.textContent = `Checking Mobile ${mobileValue}`;
+                fetch('mobile-validate/', {
+                    body: JSON.stringify({ mobile: mobileValue }),
+                    method: "POST",
+                    credentials: "same-origin",
+                    headers: {
+                        "X-CSRFToken": getCookie("csrftoken"),
+                        "Accept": "application/json",
+                        "Content-Type": "application/json"
+                    },
+                })
+                .then((res) => res.json())
+                .then(data => {
+                    mobileValidOut.style.display = 'none';
+                    if (data.mobile_error) {
+                        mobileField.classList.add('is-invalid');
+                        mobileFeedbackField.style.display = 'block';
+                        mobileFeedbackField.innerHTML = `<p>${data.mobile_error}</p>`;
+                    }
+                });
+            }
+        });
+    }
+
+
+
+
+
+    function updateTeamMembers() {
+        const teamSize = parseInt(document.getElementById('team_size_select').value);
+        const teamMembersDiv = document.getElementById('team-members');
+        while (teamMembersDiv.firstChild) {
+            teamMembersDiv.removeChild(teamMembersDiv.firstChild);
+        }
+        const teamname = document.getElementById('team-name');
+        teamname.innerHTML = `
+        <h3> Team Name </h3>
+        <input type="text" name="team_name" id="team_name" required>
+        <!-- Team name validation feedback -->
+        <div class="team-name-feedback invalid-feedback" style="display: none;">
+            <p></p>
+        </div>
+        <!-- Team name validation success message -->
+        <p class="text-sm text-success team-name-valid-out"></p>
+        `;
+        const teamNameField = document.getElementById('team_name');
+        const teamNameValidOut = document.querySelector('.team-name-valid-out');
+        const teamNameFeedbackField = document.querySelector('.team-name-feedback');
+        teamNameField.addEventListener('keyup', (e) => {
+            const teamNameValue = e.target.value;
+            teamNameValidOut.style.display = 'block';
+            teamNameField.classList.remove('is-invalid');
+            teamNameFeedbackField.style.display = 'none';
+            if (teamNameValue.length > 0) {
+                teamNameValidOut.textContent = `Checking Team Name: ${teamNameValue}`;
+                fetch('team-name-validate/', {
+                    body: JSON.stringify({ team_name: teamNameValue }),
+                    method: "POST",
+                    credentials: "same-origin",
+                    headers: {
+                        "X-CSRFToken": getCookie("csrftoken"),
+                        "Accept": "application/json",
+                        "Content-Type": "application/json"
+                    },
+                })
+                .then((res) => res.json())
+                .then(data => {
+                    teamNameValidOut.style.display = 'none';
+                    if (data.team_name_error) {
+                        teamNameField.classList.add('is-invalid');
+                        teamNameFeedbackField.style.display = 'block';
+                        teamNameFeedbackField.innerHTML = `<p>${data.team_name_error}</p>`;
+                    }
+                });
+            }
+        });
+        const team_1 = document.querySelector('#team_1');
+        team_1.style.display = 'block';
+        for (let i = 0; i < teamSize - 1; i++) {
+            const memberNumber = i + 1;
+            const memberDiv = document.createElement('div');
+            memberDiv.className = 'form-container new-member';
+            memberDiv.id = 'id_mem';
+            memberDiv.innerHTML = `
+                <h3>Team Member ${memberNumber + 1}</h3>
+                <label for="team_member_first_name_${i}">First Name:</label>
+                <input type="text" name="team_member_first_name_${i}"><br>
+                <label for="team_member_last_name_${i}">Last Name:</label>
+                <input type="text" name="team_member_last_name_${i}"><br>
+                <label for="team_member_date_of_birth_${i}">Date of Birth:</label>
+                <input type="date" name="team_member_date_of_birth_${i}"><br>
+                <label for="team_member_email_${i}">Email:</label>
+                <input type="email" name="team_member_email_${i}">
+                <div class="email-feedback invalid-feedback" style="display: none">
+                    <p></p>
+                </div>
+                <p class="text-sm text-success email-valid-out"></p><br>
+                <label for "team_member_mobile_${i}">Mobile:</label>
+                <input type="text" name="team_member_mobile_${i}" maxlength="10">
+                <div class="mobile-feedback invalid-feedback" style="display: none">
+                    <p></p>
+                </div>
+                <p class="text-sm text-success mobile-valid-out"></p><br>
+                <label for="team_member_state_${i}">State:</label>
+                <select name="team_member_state_${i}">
+                    <option value="Andhra Pradesh">Andhra Pradesh</option>
+                    <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+                    <option value="Assam">Assam</option>
+                    <option value="Bihar">Bihar</option>
+                    <option value="Chhattisgarh">Chhattisgarh</option>
+                    <option value="Goa">Goa</option>
+                    <option value="Gujarat">Gujarat</option>
+                    <option value="Haryana">Haryana</option>
+                    <option value="Himachal Pradesh">Himachal Pradesh</option>
+                    <option value="Jharkhand">Jharkhand</option>
+                    <option value="Karnataka">Karnataka</option>
+                    <option value="Kerala">Kerala</option>
+                    <option value="Madhya Pradesh">Madhya Pradesh</option>
+                    <option value="Maharashtra">Maharashtra</option>
+                    <option value="Manipur">Manipur</option>
+                    <option value="Meghalaya">Meghalaya</option>
+                    <option value="Mizoram">Mizoram</option>
+                    <option value="Nagaland">Nagaland</option>
+                    <option value="Odisha">Odisha</option>
+                    <option value="Punjab">Punjab</option>
+                    <option value="Rajasthan">Rajasthan</option>
+                    <option value="Sikkim">Sikkim</option>
+                    <option value="Tamil Nadu">Tamil Nadu</option>
+                    <option value="Telangana">Telangana</option>
+                    <option value="Tripura">Tripura</option>
+                    <option value="Uttarakhand">Uttarakhand</option>
+                    <option value="Uttar Pradesh">Uttar Pradesh</option>
+                    <option value="West Bengal">West Bengal</option>
+                </select>
+                <label for="team_member_college_${i}">College:</label>
+                <input type="text" name="team_member_college_${i}"><br>
+                <label for="team_member_aadhar_${i}">Aadhar:</label>
+                <input type="text" name="team_member_aadhar_${i}"><br>
+                <label>Meals:</label>
+                <select name="team_member_meals_${i}">
+                    <option value="Vegetarian">Vegetarian</option>
+                    <option value="Non-Vegetarian">Non-Vegetarian</option>
+                </select>
+
+            `;
+            // Set the 'required' attribute for each input element
+            const inputElements = memberDiv.querySelectorAll('input');
+            inputElements.forEach(input => {
+                input.setAttribute('required', 'true');
+            });
+            // Get the newly added email and mobile fields
+            const newEmailField = memberDiv.querySelector(`input[name="team_member_email_${i}"]`);
+            const newMobileField = memberDiv.querySelector(`input[name="team_member_mobile_${i}"]`);
+            // Select email and mobile validation output elements
+            const newEmailValidOut = memberDiv.querySelector('.email-valid-out');
+            const newMobileValidOut = memberDiv.querySelector('.mobile-valid-out');
+            // Select email and mobile feedback fields
+            const newEmailFeedbackField = memberDiv.querySelector('.email-feedback');
+            const newMobileFeedbackField = memberDiv.querySelector('.mobile-feedback');
+            // Setup email validation for the new email field
+            setupEmailValidation(newEmailField, newEmailValidOut, newEmailFeedbackField);
+            // Setup mobile validation for the new mobile field
+            setupMobileValidation(newMobileField, newMobileValidOut, newMobileFeedbackField);
+            teamMembersDiv.appendChild(memberDiv);
+            setTimeout(() => {
+                memberDiv.classList.remove('new-member');
+                memberDiv.style.opacity = 1; // Fade-in effect
+            }, 100);
+        }
+    }
+</script>
+
+<script>
+    // Email Validation
+    const emailField = document.getElementById('id_email');
+    const mobileField = document.getElementById('id_mobile');
+    // Select email and mobile validation output elements
+    const emailValidOut = document.querySelector('.email-valid-out');
+    const mobileValidOut = document.querySelector('.mobile-valid-out');
+    // Select email and mobile feedback fields
+    const emailFeedbackField = document.querySelector('.email-feedback');
+    const mobileFeedbackField = document.querySelector('.mobile-feedback');
+    emailField.addEventListener('keyup', (e) => {
+        emailValue = e.target.value;
+        emailValidOut.style.display = 'block';
+        emailField.classList.remove('is-invalid');
+        emailFeedbackField.style.display = 'none';
+        if (emailValue.length > 0) {
+            emailValidOut.textContent = `Checking Email ${emailValue}`;
+            fetch('email-validate/', {
+                body: JSON.stringify({ email: emailValue }),
+                method: "POST",
+                credentials: "same-origin",
+                headers: {
+                    "X-CSRFToken": getCookie("csrftoken"),
+                    "Accept": "application/json",
+                    "Content-Type": "application/json"
+                },
+            })
+            .then((res) => res.json())
+            .then(data => {
+                emailValidOut.style.display = 'none';
+                if (data.email_error) {
+                    emailField.classList.add('is-invalid');
+                    emailFeedbackField.style.display = 'block';
+                    emailFeedbackField.innerHTML = `<p>${data.email_error}</p>`;
+                }
+            });
+        }
+    });
+    // Mobile Validation
+    mobileField.addEventListener('keyup', (e) => {
+        mobileValue = e.target.value;
+        mobileValidOut.style.display = 'block';
+        mobileField.classList.remove('is-invalid');
+        mobileFeedbackField.style.display = 'none';
+        if (mobileValue.length > 0) {
+            mobileValidOut.textContent = `Checking Mobile ${mobileValue}`;
+            fetch('mobile-validate/', {
+                body: JSON.stringify({ mobile: mobileValue }),
+                method: "POST",
+                credentials: "same-origin",
+                headers: {
+                    "X-CSRFToken": getCookie("csrftoken"),
+                    "Accept": "application/json",
+                    "Content-Type": "application/json"
+                },
+            })
+            .then((res) => res.json())
+            .then(data => {
+                mobileValidOut.style.display = 'none';
+                if (data.mobile_error) {
+                    mobileField.classList.add('is-invalid');
+                    mobileFeedbackField.style.display = 'block';
+                    mobileFeedbackField.innerHTML = `<p>${data.mobile_error}</p>`;
+                }
+            });
+        }
+    });
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+</body>
+</html>

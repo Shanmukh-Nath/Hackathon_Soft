@@ -5,9 +5,6 @@
 <head>
     <title>Registration Form</title>
     <style>
-        canvas{
-            overflow: hidden;
-        }
         body {
             margin: 0;
             background-color: #141414;
@@ -16,6 +13,7 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
+            overflow: hidden;
         }
         .container {
             display: flex;
@@ -27,7 +25,7 @@
             display: flex;
             position: absolute;
             padding: 10px;
-            left: 90%;
+            left: 30%;
             border-radius: 10px;
             box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
         }
@@ -49,9 +47,11 @@
             padding: 15px;
             margin: 25px;
             transition: transform 0.3s ease;
+            scale: 0.8;
         }
 
         .form-container.new-member {
+            scale: 0.8;
             transform: translateX(100%); /* Start the new forms on the right */
             opacity: 0; /* Initially set to 0 to create a fading effect */
         }
@@ -87,49 +87,8 @@
             left: 40%;
         }
 
-
-
-        #team-size {
-            display: none;
-        }
-
-        .extra {
-        position: absolute;
-        top: 20px;
-        left: 20px;
-        background: #007bff;
-        padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-        color: white;
-    }
-
-    .radio-options {
-        display: flex;
-        align-items: center;
-        margin-bottom: 20px;
-    }
-
-    .radio-options label {
-        background-color: #fff;
-        color: #007bff;
-        padding: 10px 20px;
-        border-radius: 5px;
-        cursor: pointer;
-        margin-right: 10px;
-        transition: background-color 0.3s, color 0.3s;
-    }
-
-    .radio-options input[type="radio"] {
-        display: none;
-    }
-
-    .radio-options input[type="radio"]:checked + label {
-        background-color: #007bff;
-        color: #fff;
-    }
-
-    #team-size select, #team-name input[type="text"] {
+        #team-size select,
+    #team-name input[type="text"] {
         width: 100%;
         padding: 10px;
         border: 1px solid #ccc;
@@ -145,8 +104,8 @@
     #submit-button input[type="submit"] {
         background: #fff;
         color: #007bff;
-        padding: 10px 20px;
         border: none;
+        height: 50px;
         border-radius: 5px;
         cursor: pointer;
         transition: background-color 0.3s, color 0.3s;
@@ -155,6 +114,47 @@
     #submit-button input[type="submit"]:hover {
         background-color: #007bff;
         color: #fff;
+    }
+        .radio-options {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .radio-options label {
+        background-color: #fff;
+        color: yellowgreen;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-right: 10px;
+        transition: background-color 0.3s, color 0.3s;
+    }
+
+    .radio-options input[type="radio"] {
+        display: none;
+    }
+
+    .radio-options input[type="radio"]:checked + label {
+        background-color: #007b;
+        color: #fff;
+    }
+
+        .extra {
+                position: absolute;
+    top: 10%;
+    right: 0;
+    background: #007bff;
+    padding: 20px;
+    border-radius: 10px;
+    color: white;
+            scale: 0.8;
+        }
+            canvas{
+        top: 0;
+        left: 0;
+        position: absolute;
+        z-index: -1;
     }
 
         .alert {
@@ -178,14 +178,14 @@
         .text-danger {
             color: #f44336;
         }
-        input[type='submit']{
-            width: 40%;
-            color: blue;
-            background: white;
-            height: 50%;
-            left: 30%;
-            position: absolute;
-        }
+    input[type='submit'] {
+        width: 40%;
+        color: blue;
+        background: white;
+        height: 50%;
+        left: 30%;
+        position: absolute;
+    }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
@@ -269,9 +269,14 @@
                     <label for="participant_type">Type</label>
                     {{ form.participant_type }}
                 </div>
-                <div id="team-members"></div>
 
-                <div class="extra">
+        </div>
+    </div>
+</div>
+
+<div id="team-members"></div>
+<div class="extra">
+
     <div class="radio-options">
         <input type="radio" name="is_individual" value="1" id="individual_radio" checked>
         <label for="individual_radio">Individual</label>
@@ -280,7 +285,8 @@
         <label for="team_radio">Team</label>
     </div>
 
-    <div id="team-size">
+
+    <div style="display: none" id="team-size">
         <label for="team_size">Team Size:</label>
         <select name="team_size" id="team_size_select">
             <option value="3">3</option>
@@ -289,27 +295,17 @@
         </select>
     </div>
 
-    <div id="team-name">
-        <label for="team_name">Team Name:</label>
-        <input type="text" name="team_name" required>
-    </div>
+    <div id="team-name"></div>
 
     <div id="submit-button">
         <input type="submit" value="Submit">
     </div>
-</div>
-
             </form>
-        </div>
-    </div>
-</div>
 <div>
         <canvas class="webgl"></canvas>
 </div>
-
-
-
 <script>
+
 {#  THREEJS Background Scene  #}
 
 let scene;
@@ -407,6 +403,8 @@ animate();
 
 
 {#  End  #}
+
+
 function adjustMainFormPosition() {
     const teamMembers = document.querySelectorAll('.form-container');
     const mainForm = document.querySelector('.main-form');
@@ -419,9 +417,9 @@ function adjustMainFormPosition() {
     }
 }
     document.getElementById('team_radio').addEventListener('click', function() {
-        document.getElementById('team-name').style.display = 'block';
         {#document.querySelector('.main-form').style.transform = 'translateX(-100%)';#}
         document.getElementById('team-size').style.display = 'block';
+        document.getElementById('team-name').style.display = 'block';
 
         updateTeamMembers();
         adjustMainFormPosition();
@@ -430,8 +428,8 @@ function adjustMainFormPosition() {
     document.getElementById('individual_radio').addEventListener('click', function() {
         {#document.querySelector('.main-form').style.transform = 'translateX(0)';#}
         document.getElementById('team-size').style.display = 'none';
-                document.getElementById('team_1').style.display = 'none';
         document.getElementById('team-name').style.display = 'none';
+                document.getElementById('team_1').style.display = 'none';
         // Clear previously added team member forms
         const teamMembersDiv = document.getElementById('team-members');
         while (teamMembersDiv.firstChild) {
@@ -508,6 +506,9 @@ function adjustMainFormPosition() {
             }
         });
     }
+
+
+
 
 
 

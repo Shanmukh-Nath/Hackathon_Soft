@@ -622,7 +622,7 @@ def registration(request):
 
     else:
         form = RegistrationForm()
-    return render(request, 'register.html', {'form': form})
+    return render(request, 'reg.html', {'form': form})
 
 
 
