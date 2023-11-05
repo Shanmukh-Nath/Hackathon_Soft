@@ -27,10 +27,8 @@ from django.contrib.auth.models import User
 from .tokens import complex_token_generator
 from .forms import RegistrationForm, SuperuserLoginForm, SuperCoordinatorForm, CoordinatorForm, CoordinatorEditForm, \
     ParticipantEditForm, UserProfileEditForm
-from .models import Participant, Team, Domain, Coordinator, UserProfile, CheckInOTP, State, Meals, QRCode
-
-
-
+from .models import Participant, Team, Domain, Coordinator, UserProfile, CheckInOTP, State, Meals, QRCode, \
+    ParticipantType
 
 
 def send_invitations(request):
@@ -544,81 +542,87 @@ def verify_otp(request, encoded_id):
 
 def registration(request):
     if request.method == 'POST':
-        form = RegistrationForm(request.POST)
-        if form.is_valid():
-            participant = form.save(commit=False)
-            is_individual = request.POST.get('is_individual')
-            if is_individual == '1':
-                participant.is_individual = True
-                participant.save()
-                # Create a team for the individual participant
-                team = Team.objects.create(
-                    team_head_username=participant.first_name,
-                    domain=Domain.objects.get(pk=participant.domain_of_interest.id)
-                )
-                participant.team = team
-                participant.save()
-                send_reg_success(request,participant)
-                return redirect('success')
-            else:
-                participant.is_individual = False
-
-                print(request.POST)
-                team_size = int(request.POST.get('team_size'))
-                team_name = request.POST.get('team_name')
-                if 3 <= team_size <= 5:
-
+        try:
+            form = RegistrationForm(request.POST)
+            if form.is_valid():
+                participant = form.save(commit=False)
+                is_individual = request.POST.get('is_individual')
+                if is_individual == '1':
+                    participant.is_individual = True
+                    participant.save()
+                    # Create a team for the individual participant
                     team = Team.objects.create(
                         team_head_username=participant.first_name,
                         domain=Domain.objects.get(pk=participant.domain_of_interest.id)
-
                     )
-                    team.team_name = team_name
-                    team.team_size = team_size
-                    team.save()
                     participant.team = team
                     participant.save()
-
-                    teams_email = []
-                    teams_mobile = []
-                    teams_aadhar = []
-
-                    for i in range(team_size - 1):
-                        teams_email.append(request.POST.get(f'team_member_email_{i}'))
-                        teams_mobile.append(request.POST.get(f'team_member_mobile_{i}'))
-                        teams_aadhar.append(request.POST.get(f'team_member_aadhar_{i}'))
-                        if participant.email==request.POST.get(f'team_member_email_{i}') or participant.mobile==request.POST.get(f'team_member_mobile_{i}') or participant.aadhar==request.POST.get(f'team_member_aadhar_{i}'):
-                            participant.delete()
-                            team.delete()
-                            messages.error(request,'You cannot use same details')
-                            return redirect('registration')
-                        else:
-                            # print(request.POST.get(f'team_member_state_{i}'))
-                            state = State.objects.get(state_name=request.POST.get(f'team_member_state_{i}'))
-                            meal = Meals.objects.get(meal_name=request.POST.get(f'team_member_meals_{i}'))
-                            team_member = Participant(
-                                first_name=request.POST.get(f'team_member_first_name_{i}'),
-                                last_name=request.POST.get(f'team_member_last_name_{i}'),
-                                date_of_birth=request.POST.get(f'team_member_date_of_birth_{i}'),
-                                email=request.POST.get(f'team_member_email_{i}'),
-                                mobile=request.POST.get(f'team_member_mobile_{i}'),
-                                state=state.id,
-                                college=request.POST.get(f'team_member_college_{i}'),
-                                aadhar=request.POST.get(f'team_member_aadhar_{i}'),
-                                domain_of_interest=participant.domain_of_interest,
-                                meals = meal.id,
-                                is_individual=False,
-                                team=team
-                            )
-                            team_member.save()
-
-                    if set(teams_email) != team_size or set(teams_mobile) != team_size or set(teams_aadhar) != team_size:
-                        participant.delete()
-                        team.delete()
-                        messages.error(request,"You cannot use same details in form, please check the data of these unique fields - Email, Mobile, Aadhar.")
-                        return redirect('coordinator_login')
                     send_reg_success(request,participant)
                     return redirect('success')
+                else:
+                    participant.is_individual = False
+
+                    print(request.POST)
+                    team_size = int(request.POST.get('team_size'))
+                    team_name = request.POST.get('team_name')
+                    if 3 <= team_size <= 5:
+
+                        team = Team.objects.create(
+                            team_head_username=participant.first_name,
+                            domain=Domain.objects.get(pk=participant.domain_of_interest.id)
+
+                        )
+                        team.team_name = team_name
+                        team.team_size = team_size
+                        team.save()
+                        participant.team = team
+                        participant.save()
+
+                        teams_email = []
+                        teams_mobile = []
+                        teams_aadhar = []
+
+                        for i in range(team_size - 1):
+                            teams_email.append(request.POST.get(f'team_member_email_{i}'))
+                            teams_mobile.append(request.POST.get(f'team_member_mobile_{i}'))
+                            teams_aadhar.append(request.POST.get(f'team_member_aadhar_{i}'))
+                            if participant.email==request.POST.get(f'team_member_email_{i}') or participant.mobile==request.POST.get(f'team_member_mobile_{i}') or participant.aadhar==request.POST.get(f'team_member_aadhar_{i}'):
+                                participant.delete()
+                                team.delete()
+                                messages.error(request,'You cannot use same details')
+                                return redirect('registration')
+                            else:
+                                # print(request.POST.get(f'team_member_state_{i}'))
+                                state = State.objects.get(state_name=request.POST.get(f'team_member_state_{i}'))
+                                meal = Meals.objects.get(meal_name=request.POST.get(f'team_member_meals_{i}'))
+                                type = ParticipantType.objects.get(type=request.POST.get(f'team_member_type_{i}'))
+                                team_member = Participant(
+                                    first_name=request.POST.get(f'team_member_first_name_{i}'),
+                                    last_name=request.POST.get(f'team_member_last_name_{i}'),
+                                    date_of_birth=request.POST.get(f'team_member_date_of_birth_{i}'),
+                                    email=request.POST.get(f'team_member_email_{i}'),
+                                    mobile=request.POST.get(f'team_member_mobile_{i}'),
+                                    state=state.id,
+                                    college=request.POST.get(f'team_member_college_{i}'),
+                                    aadhar=request.POST.get(f'team_member_aadhar_{i}'),
+                                    domain_of_interest=participant.domain_of_interest,
+                                    meals = meal.id,
+                                    participant_type=type.id,
+                                    is_individual=False,
+                                    team=team
+                                )
+                                team_member.save()
+
+                        if set(teams_email) != team_size or set(teams_mobile) != team_size or set(teams_aadhar) != team_size:
+                            participant.delete()
+                            team.delete()
+                            messages.error(request,"You cannot use same details in form, please check the data of these unique fields - Email, Mobile, Aadhar.")
+                            return redirect('coordinator_login')
+                        send_reg_success(request,participant)
+                        return redirect('success')
+        except(Exception):
+            messages.error('The form contains errors, please check it.')
+            return redirect('registration')
 
     else:
         form = RegistrationForm()

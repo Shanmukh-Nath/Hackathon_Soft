@@ -25,29 +25,34 @@
             display: flex;
             position: absolute;
             padding: 10px;
-            left: 30%;
+            left: 80%;
             border-radius: 10px;
             box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
         }
 
         .main-form {
+            top: -3%;
+            left: 38%;
             color: white;
-            padding: 20px;
             position: absolute;
-            border-radius: 10px;
             box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
             max-width: 400px;
             width: 100%;
+            display: flex;
+            border-radius: 20px;
             transition: transform 0.3s ease; /* Add a transition effect for smooth sliding */
         }
 
         .form-container {
             color: white;
-            background: red;
+            border-radius: 20px;
+            background: deepskyblue;
             padding: 15px;
-            margin: 25px;
+            margin: 10px;
             transition: transform 0.3s ease;
             scale: 0.8;
+            align-items: center;
+            justify-content: center;
         }
 
         .form-container.new-member {
@@ -74,10 +79,11 @@
         input[type="email"],
         input[type="date"],
         select {
-            padding: 12px;
+            padding: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
             font-size: 16px;
+            margin-bottom: 10px;
         }
 
         h1 {
@@ -89,7 +95,7 @@
 
         #team-size select,
     #team-name input[type="text"] {
-        width: 100%;
+        width: 80%;
         padding: 10px;
         border: 1px solid #ccc;
         border-radius: 5px;
@@ -142,8 +148,8 @@
 
         .extra {
                 position: absolute;
-    top: 10%;
-    right: 0;
+    top: 1%;
+    left: 0;
     background: #007bff;
     padding: 20px;
     border-radius: 10px;
@@ -156,13 +162,17 @@
         position: absolute;
         z-index: -1;
     }
-
+    label{
+        margin-top: 10px;
+    }
         .alert {
             padding: 10px;
             margin-bottom: 20px;
             border-radius: 5px;
         }
-
+        .mov{
+            cursor: grab;
+        }
         .alert-success {
             background-color: #4CAF50;
         }
@@ -198,8 +208,9 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 </head>
 
-<body>
+<body onload="move('extra')">
 <h1 style="text-align: center;">Registration Form</h1>
+<form method="post">
 <div class="main-form">
     <div class="form-container">
         {% if messages %}
@@ -212,7 +223,7 @@
             {% endfor %}
         {% endif %}
         <div class="form">
-            <form method="post">
+
                 {% csrf_token %}
                 <h3 id="team_1" style="display: none">Team Member 1</h3>
                 <div class="form-group">
@@ -271,11 +282,17 @@
                 </div>
 
         </div>
+
     </div>
+<div id="team-members"></div>
 </div>
 
-<div id="team-members"></div>
+
 <div class="extra">
+    <div class="mov" style="align-items: center;display: flex;flex-direction: column;">
+        <img width="15" height="15" src="https://img.icons8.com/ios-glyphs/30/ellipsis.png" alt="ellipsis"/>
+
+    </div>
 
     <div class="radio-options">
         <input type="radio" name="is_individual" value="1" id="individual_radio" checked>
@@ -300,8 +317,10 @@
     <div id="submit-button">
         <input type="submit" value="Submit">
     </div>
-            </form>
-<div>
+</div>
+</form>
+
+    <div>
         <canvas class="webgl"></canvas>
 </div>
 <script>
@@ -324,7 +343,7 @@ renderer = new THREE.WebGLRenderer({
   antialias: true,
 });
 renderer.autoClear = false;
-renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setSize((window.innerWidth ), (window.innerHeight));
 renderer.setPixelRatio(window.devicePixelRatio ? window.devicePixelRatio : 1);
 renderer.setClearColor(0x000000, 0.0);
 document.body.appendChild(renderer.domElement);
@@ -404,6 +423,21 @@ animate();
 
 {#  End  #}
 
+function adjustextra(){
+    const extra = document.querySelector('.extra');
+    extra.style.top = '85%';
+    extra.style.display = 'flex';
+    //Team Name CSS
+    const teamnamediv = document.querySelector('#team-name');
+    teamnamediv.style.display = 'flex';
+    teamnamediv.style.marginLeft = '33px';
+    teamnamediv.style.width = 'auto';
+    teamnamediv.style.flexDirection = 'row';
+    const submitbtn = document.querySelector('#submit-button');
+    submitbtn.style.left = '80%'
+
+
+}
 
 function adjustMainFormPosition() {
     const teamMembers = document.querySelectorAll('.form-container');
@@ -420,7 +454,7 @@ function adjustMainFormPosition() {
         {#document.querySelector('.main-form').style.transform = 'translateX(-100%)';#}
         document.getElementById('team-size').style.display = 'block';
         document.getElementById('team-name').style.display = 'block';
-
+        //adjustextra();
         updateTeamMembers();
         adjustMainFormPosition();
     });
@@ -506,12 +540,28 @@ function adjustMainFormPosition() {
             }
         });
     }
+const extraDiv = document.querySelector('.extra');
+const movElement = document.querySelector('.mov');
 
+movElement.addEventListener('mousedown', (e) => {
+    movElement.style.cursor = 'grabbing';
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const startLeft = extraDiv.offsetLeft;
+    const startTop = extraDiv.offsetTop;
 
+    document.onmousemove = (e) => {
+        const deltaX = e.clientX - startX;
+        const deltaY = e.clientY - startY;
+        extraDiv.style.left = startLeft + deltaX + 'px';
+        extraDiv.style.top = startTop + deltaY + 'px';
+    };
+});
 
-
-
-
+document.onmouseup = () => {
+        movElement.style.cursor = 'grab';
+    document.onmousemove = null;
+};
 
 
     function updateTeamMembers() {
@@ -522,7 +572,7 @@ function adjustMainFormPosition() {
         }
         const teamname = document.getElementById('team-name');
         teamname.innerHTML = `
-        <h3> Team Name </h3>
+        <h3 id="team-name-label"> Team Name </h3>
         <input type="text" name="team_name" id="team_name" required>
         <!-- Team name validation feedback -->
         <div class="team-name-feedback invalid-feedback" style="display: none;">
@@ -628,6 +678,11 @@ function adjustMainFormPosition() {
                 <select name="team_member_meals_${i}">
                     <option value="Vegetarian">Vegetarian</option>
                     <option value="Non-Vegetarian">Non-Vegetarian</option>
+                </select>
+                <label>Type:</label>
+                <select name="team_member_type_${i}">
+                    <option value="student">student</option>
+                    <option value="professional">professional</option>
                 </select>
 
             `;
