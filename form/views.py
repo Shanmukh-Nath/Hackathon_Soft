@@ -594,6 +594,8 @@ def registration(request):
                             else:
                                 # print(request.POST.get(f'team_member_state_{i}'))
                                 state = State.objects.get(state_name=request.POST.get(f'team_member_state_{i}'))
+                                print(state)
+                                print(state.id)
                                 meal = Meals.objects.get(meal_name=request.POST.get(f'team_member_meals_{i}'))
                                 type = ParticipantType.objects.get(type=request.POST.get(f'team_member_type_{i}'))
                                 team_member = Participant(
@@ -602,26 +604,38 @@ def registration(request):
                                     date_of_birth=request.POST.get(f'team_member_date_of_birth_{i}'),
                                     email=request.POST.get(f'team_member_email_{i}'),
                                     mobile=request.POST.get(f'team_member_mobile_{i}'),
-                                    state=state.id,
+                                    state=state,
                                     college=request.POST.get(f'team_member_college_{i}'),
                                     aadhar=request.POST.get(f'team_member_aadhar_{i}'),
                                     domain_of_interest=participant.domain_of_interest,
-                                    meals = meal.id,
-                                    participant_type=type.id,
+                                    meals = meal,
+                                    participant_type=type,
                                     is_individual=False,
                                     team=team
                                 )
                                 team_member.save()
-
-                        if set(teams_email) != team_size or set(teams_mobile) != team_size or set(teams_aadhar) != team_size:
+                        '''print(team_size)
+                        print(teams_email)
+                        print(teams_mobile)
+                        print(teams_aadhar)
+                        print(set(teams_email))
+                        print(set(teams_mobile))
+                        print(set(teams_aadhar))
+                        print(len(set(teams_email)))
+                        print(len(set(teams_mobile)))
+                        print(len(set(teams_aadhar)))'''
+                        if len(set(teams_email)) != (team_size-1) or len(set(teams_mobile)) != (team_size-1) or len(set(teams_aadhar)) != (team_size-1):
                             participant.delete()
                             team.delete()
                             messages.error(request,"You cannot use same details in form, please check the data of these unique fields - Email, Mobile, Aadhar.")
-                            return redirect('coordinator_login')
+                            return redirect('registration')
                         send_reg_success(request,participant)
                         return redirect('success')
         except(Exception):
-            messages.error('The form contains errors, please check it.')
+
+            participant.delete()
+            team.delete()
+            messages.error(request,'The form contains errors, please check it.')
             return redirect('registration')
 
     else:
