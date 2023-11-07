@@ -23,6 +23,7 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode, int_
 from django import template
 from django.views import View
 from django.contrib.auth.models import User
+from background_task import background
 
 from .tokens import complex_token_generator
 from .forms import RegistrationForm, SuperuserLoginForm, SuperCoordinatorForm, CoordinatorForm, CoordinatorEditForm, \
@@ -643,6 +644,13 @@ def registration(request):
     return render(request, 'reg.html', {'form': form})
 
 
+@background(schedule=1)
+def send_email_task(email_subject, text_content, from_email, email,html_content):
+    msg = EmailMultiAlternatives(email_subject, text_content, from_email, [email])
+    msg.attach_alternative(html_content, 'text/html')
+    msg.send()
+    print("MSG Sent")
+
 
 def send_reg_success(request,participant):
     parts = Participant.objects.filter(team_id=participant.team_id)
@@ -662,10 +670,9 @@ def send_reg_success(request,participant):
         text_content = plaintext.render(c)
         html_content = htmltemp.render(c)
         try:
-            msg = EmailMultiAlternatives(subject, text_content, from_email, [p.email])
-            msg.attach_alternative(html_content, 'text/html')
-            msg.send()
+            send_email_task(subject,text_content,from_email,p.email,html_content)
         except BadHeaderError:
+            print("Here")
             return HttpResponse('Invalid header found.')
 
 

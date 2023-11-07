@@ -28,7 +28,7 @@ SECRET_KEY = 'django-insecure-n2=&e27on&v!+l(laf5s=v!$q-lo*cxhrf93r28@%+-3qjrjw@
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = []
 
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 # Application definition
@@ -41,7 +41,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'form',
-    'rest_framework'
+    'rest_framework',
+    'background_task',
 ]
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',

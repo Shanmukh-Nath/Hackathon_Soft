@@ -72,6 +72,7 @@ class Team(models.Model):
     domain = models.ForeignKey(Domain, on_delete=models.CASCADE)
     team_name = models.CharField(max_length=100,default="SOLO")
     team_size = models.IntegerField(default=1)
+    reg_id = models.CharField(max_length=12,default=0)
 
     def __str__(self):
         return self.team_name
@@ -101,6 +102,7 @@ class Participant(models.Model):
     meals = models.ForeignKey(Meals,on_delete=models.CASCADE,blank=True,null=True)
     participant_type = models.ForeignKey(ParticipantType,on_delete=models.CASCADE,blank=True,null=True)
     is_qrassigned = models.BooleanField(default=False)
+    participant_id = models.CharField(max_length=12,null=True,blank=True,unique=True)
 
     def __str__(self):
         return self.first_name

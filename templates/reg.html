@@ -4,6 +4,7 @@
 <html>
 <head>
     <title>Registration Form</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
         body {
             margin: 0;
@@ -202,6 +203,38 @@
         left: 30%;
         position: absolute;
     }
+    @media screen and (max-width: 768px) {
+        body{
+            overflow: auto;
+            background: black;
+        }
+        .mov{
+            display: none;
+        }
+            .main-form {
+                top: 40%;
+                left: 0;
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+            }
+            #team-members{
+                    display: flex;
+                    flex-direction: column;
+                    left: 0;
+                    top: 100%;
+            }
+            .form-container {
+                top: 100px;
+                width: 100%;
+            }
+
+            .extra {
+                top: 10%;
+                left: 25%;
+            }
+
+        }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
@@ -297,7 +330,8 @@
 
 <div class="extra">
     <div class="mov" style="align-items: center;display: flex;flex-direction: column;">
-        <img width="15" height="15" src="https://img.icons8.com/ios-glyphs/30/ellipsis.png" alt="ellipsis"/>
+        <img style="transform: rotate(90deg);top: 0;" src="https://www.gstatic.com/images/icons/material/system_gm/1x/drag_indicator_white_20dp.png">
+{#        <img width="15" height="15" src="https://img.icons8.com/ios-glyphs/30/ellipsis.png" alt="ellipsis"/>#}
 
     </div>
 
@@ -416,13 +450,19 @@ window.addEventListener(
 );
 
 //animation loop
-const animate = () => {
-  requestAnimationFrame(animate);
-  controls.update();
-  starMesh.rotation.y += 0.0003;
-  camera.layers.set(1);
-  bloomComposer.render();
-};
+console.log(window.innerWidth)
+    const animate = () => {
+        if(window.innerWidth<=980){
+            return;
+        }
+        else {
+            requestAnimationFrame(animate);
+            controls.update();
+            starMesh.rotation.y += 0.0003;
+            camera.layers.set(1);
+            bloomComposer.render();
+        }
+    };
 
 animate();
 
@@ -449,7 +489,11 @@ function adjustextra(){
 function adjustMainFormPosition() {
     const teamMembers = document.querySelectorAll('.form-container');
     const mainForm = document.querySelector('.main-form');
-    const maxOffset = 120; // Set your desired maximum offset percentage
+    if(window.innerWidth<=980){
+        const maxOffset = 0
+    }else {
+        const maxOffset = 120;
+    }// Set your desired maximum offset percentage
     if (teamMembers.length === 1) {
         mainForm.style.transform = 'translateX(0)';// Move the main form to the left
     } else {
