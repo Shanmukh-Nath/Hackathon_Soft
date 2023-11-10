@@ -7,6 +7,7 @@ urlpatterns = [
     path('register/mobile-validate/', views.MobileValidation.as_view(), name="mobile-validate"),
     path('register/team-name-validate/', views.TeamNameValidation.as_view(), name='team-name-validate'),
     path('success/', views.success, name='success'),
+    path('delegate_pass/<str:encoded_regid>',views.delegate_pass,name='delegate_pass'),
     path('logout/',views.logout,name='logout'),
     #SuperUser URLs
     path('superuser/login/',views.superuser_login,name='superuser_login'),

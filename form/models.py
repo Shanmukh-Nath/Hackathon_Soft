@@ -74,8 +74,25 @@ class Team(models.Model):
     team_size = models.IntegerField(default=1)
     reg_id = models.CharField(max_length=12,default=0)
 
+
+    def encode_regid(self):
+        import base64
+        id_bytes = str(self.reg_id).encode('utf-8')
+        return base64.b64encode(id_bytes).decode('utf-8')
     def __str__(self):
         return self.team_name
+
+
+class DownloadLog(models.Model):
+    initiator = models.ForeignKey(User, on_delete=models.CASCADE, related_name='downloads_initiated')
+    recipient_name = models.CharField(max_length=200)
+    recipient_mobile = models.IntegerField(max_length=10)
+    recipient_email = models.EmailField()
+    download_time = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.recipient_name}"
+
 
 
 class ParticipantType(models.Model):

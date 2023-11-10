@@ -1,5 +1,5 @@
 from django import forms
-from .models import Participant, Coordinator, UserProfile
+from .models import Participant, Coordinator, UserProfile, DownloadLog
 
 
 class SuperuserLoginForm(forms.Form):
@@ -30,7 +30,7 @@ class CoordinatorForm(forms.ModelForm):
 class ParticipantEditForm(forms.ModelForm):
     class Meta:
         model = Participant
-        exclude = ['edited_by','is_individual','mobile','aadhar','is_checkedin','participant_type','is_qrassigned']  # Include all fields from the Participant model
+        exclude = ['edited_by','is_individual','mobile','aadhar','is_checkedin','participant_type','is_qrassigned','meals','participant_id']  # Include all fields from the Participant model
         widgets = {
             'date_of_birth': forms.DateInput(attrs={'type': 'date'}),
         }
@@ -41,6 +41,11 @@ class UserProfileEditForm(forms.ModelForm):
         exclude = []  # Include all fields from the Participant model
         fields = '__all__'
 
+class SuperuserDownloadForm(forms.ModelForm):
+    class Meta:
+        model = DownloadLog
+        exclude = ['initiator','download_time']
+        fields = '__all__'
 
 
 class CoordinatorEditForm(forms.ModelForm):

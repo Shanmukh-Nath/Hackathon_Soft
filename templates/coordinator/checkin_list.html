@@ -147,26 +147,27 @@ tbody td:hover:before {
 {% endfor %}
         {% endif %}
 <input type="text" id="searchInput" onkeyup="searchTable()" placeholder="Search for participants..." />
-<div class="filter-container">
-    <label for="teamFilter">Filter by Team:</label>
-    <select id="teamFilter" onchange="filterTable()">
-        <option value="all">All</option>
-        {% for t in teams %}
-        <option value="{{ t.team_name }}">{{ t.team_name }}</option>
-        {% endfor %}
-        <!-- Add more options as needed -->
-    </select>
-</div>
+{#<div class="filter-container">#}
+{#    <label for="teamFilter">Filter by Team:</label>#}
+{#    <select id="teamFilter" onchange="filterTable()">#}
+{#        <option value="all">All</option>#}
+{#        {% for t in teams %}#}
+{#        <option value="{{ t.team_name }}">{{ t.team_name }}</option>#}
+{#        {% endfor %}#}
+{#        <!-- Add more options as needed -->#}
+{#    </select>#}
+{#</div>#}
 <div class="container">
+
 <table>
   <thead>
     <tr>
       <th>Email</th>
       <th>First Name</th>
       <th>State</th>
-      <th>College</th>
-      <th>Domain</th>
+      <th>Theme</th>
       <th>Team Name</th>
+        <th>Registration ID</th>
         <th>Action</th>
 
       <!-- Add more boolean attributes as needed -->
@@ -178,9 +179,9 @@ tbody td:hover:before {
       <td>{{ coordinator.email }}</td>
       <td>{{ coordinator.first_name }}</td>
         <td>{{ coordinator.state }}</td>
-        <td>{{ coordinator.college }}</td>
         <td>{{ coordinator.domain_of_interest.domain_name }}</td>
         <td>{{ coordinator.team.team_name }}</td>
+        <td>{{ coordinator.team.reg_id }}</td>
 
 
       <!-- Add more boolean attributes as needed -->
@@ -194,6 +195,8 @@ tbody td:hover:before {
     {% endfor %}
   </tbody>
 </table>
+
+
 </div>
 <script>
 function searchTable() {

@@ -146,17 +146,17 @@ tbody td:hover:before {
 </div>
 {% endfor %}
         {% endif %}
+{% if coordinators %}
 <input type="text" id="searchInput" onkeyup="searchTable()" placeholder="Search for participants..." />
-
 <div class="container">
 <table>
   <thead>
     <tr>
+        <th>Participant ID</th>
       <th>Email</th>
       <th>First Name</th>
       <th>State</th>
-      <th>College</th>
-      <th>Domain</th>
+      <th>Theme</th>
       <th>Team Name</th>
         <th>Action</th>
 
@@ -166,10 +166,10 @@ tbody td:hover:before {
   <tbody>
     {% for coordinator in coordinators %}
     <tr>
+    <td>{{ coordinator.participant_id }}</td>
       <td>{{ coordinator.email }}</td>
       <td>{{ coordinator.first_name }}</td>
         <td>{{ coordinator.state }}</td>
-        <td>{{ coordinator.college }}</td>
         <td>{{ coordinator.domain_of_interest.domain_name }}</td>
         <td>{{ coordinator.team.team_name }}</td>
 
@@ -185,6 +185,11 @@ tbody td:hover:before {
     {% endfor %}
   </tbody>
 </table>
+{% else %}
+    <div class="non">
+<h4 style="color: white;">No Participant has checked in.</h4>
+    </div>
+{% endif %}
 </div>
 <script>
 function searchTable() {

@@ -2,8 +2,11 @@ import base64
 import csv
 import datetime
 import json
+import os
 import random
 
+import pdfkit
+import pyotp
 from django.contrib import messages, auth
 from django.contrib.auth import login, authenticate, get_user_model
 from django.contrib.auth.backends import ModelBackend
@@ -16,6 +19,7 @@ from django.db import IntegrityError
 
 from django.http import JsonResponse, HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
+from django.template.loader import render_to_string, get_template
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.encoding import force_bytes
@@ -24,10 +28,12 @@ from django import template
 from django.views import View
 from django.contrib.auth.models import User
 from background_task import background
+from weasyprint import HTML, CSS
 
+from djangoProject import settings
 from .tokens import complex_token_generator
 from .forms import RegistrationForm, SuperuserLoginForm, SuperCoordinatorForm, CoordinatorForm, CoordinatorEditForm, \
-    ParticipantEditForm, UserProfileEditForm
+    ParticipantEditForm, UserProfileEditForm, SuperuserDownloadForm
 from .models import Participant, Team, Domain, Coordinator, UserProfile, CheckInOTP, State, Meals, QRCode, \
     ParticipantType
 
@@ -154,6 +160,7 @@ def coordinator_login(request):
                         user_profile[0].current_session_id = request.session.session_key
                         user_profile[0].last_login = timezone.now()
                         user_profile[0].save()
+                        messages.success(request,"Please do not Forget to logout while closing the browser or else you will be locked out.")
                         return redirect('coordinator_dashboard')
             else:
                 print("invalid")
@@ -411,7 +418,7 @@ def part_qr_success(request):
 
 @login_required(login_url='/coordinator/login/')
 def part_qr_list(request):
-    coordinator = Participant.objects.filter(is_qrassigned=False)
+    coordinator = Participant.objects.filter(is_qrassigned=False,is_checkedin=True)
     return render(request,'coordinator/qr_assign.html',{'coordinators':coordinator})
 
 
@@ -537,7 +544,55 @@ def verify_otp(request, encoded_id):
     return render(request, 'coordinator/checkin_otp_verification.html', {'participant': participant, 'otp': otp})
 
 
+def generate_registration_id():
+        # Generate a random 8-digit number
+    random_number = random.randint(10000000, 99999999)
 
+        # Create the registration ID by combining 'HBR' and the random number
+    registration_id = f'HBR{random_number}'
+
+    return registration_id
+
+def generate_totp_secret():
+    """
+    Generates a random TOTP secret key.
+    """
+    return pyotp.random_base32()
+
+def generate_otp():
+    """
+    Generates a random 6-digit OTP.
+    """
+    return ''.join(random.choice('0123456789') for _ in range(6))
+
+'''@login_required(login_url='/coordinator/login/')
+def superuser_download(request):
+    if request.method == 'POST':
+        form = SuperuserDownloadForm(request.POST)
+        if form.is_valid():
+            # Validate the provided details (Name, Mobile, Email)
+            name = form.cleaned_data['name']
+            mobile = form.cleaned_data['mobile']
+            email = form.cleaned_data['email']
+
+            # Check if the superuser exists and the provided details match
+            if valid_superuser(name, mobile, email):
+                # Generate and send OTP to the provided email
+                otp = generate_otp()
+                send_otp(email, otp)
+
+                # Save the OTP and other details in the session for verification
+                request.session['superuser_email'] = email
+                request.session['expected_otp'] = otp
+
+                return render(request, 'verify_otp.html')
+            else:
+                messages.error(request, 'Invalid superuser details.')
+    else:
+        form = SuperuserDownloadForm()
+
+    return render(request, 'superuser_download.html', {'form': form})
+'''
 
 
 
@@ -556,6 +611,10 @@ def registration(request):
                         team_head_username=participant.first_name,
                         domain=Domain.objects.get(pk=participant.domain_of_interest.id)
                     )
+                    reg_id = generate_registration_id()
+                    print(reg_id)
+                    team.reg_id = reg_id
+                    team.save()
                     participant.team = team
                     participant.save()
                     send_reg_success(request,participant)
@@ -573,6 +632,9 @@ def registration(request):
                             domain=Domain.objects.get(pk=participant.domain_of_interest.id)
 
                         )
+                        reg_id = generate_registration_id()
+                        print(reg_id)
+                        team.reg_id = reg_id
                         team.team_name = team_name
                         team.team_size = team_size
                         team.save()
@@ -615,16 +677,6 @@ def registration(request):
                                     team=team
                                 )
                                 team_member.save()
-                        '''print(team_size)
-                        print(teams_email)
-                        print(teams_mobile)
-                        print(teams_aadhar)
-                        print(set(teams_email))
-                        print(set(teams_mobile))
-                        print(set(teams_aadhar))
-                        print(len(set(teams_email)))
-                        print(len(set(teams_mobile)))
-                        print(len(set(teams_aadhar)))'''
                         if len(set(teams_email)) != (team_size-1) or len(set(teams_mobile)) != (team_size-1) or len(set(teams_aadhar)) != (team_size-1):
                             participant.delete()
                             team.delete()
@@ -633,10 +685,9 @@ def registration(request):
                         send_reg_success(request,participant)
                         return redirect('success')
         except(Exception):
-
             participant.delete()
             team.delete()
-            messages.error(request,'The form contains errors, please check it.')
+            messages.error(request,"Form has errors, please check it. If it occurs multiple times, please contact us.")
             return redirect('registration')
 
     else:
@@ -644,37 +695,84 @@ def registration(request):
     return render(request, 'reg.html', {'form': form})
 
 
+
+def delegate_pass(request,encoded_regid):
+    reg_id = base64.b64decode(encoded_regid.encode()).decode()
+    team = Team.objects.get(reg_id=reg_id)
+    if team.team_size==1:
+        participant = Participant.objects.get(team=team.id)
+        template_1 = 'Emails/delegate_pass.html'
+        context = {
+                'participant': participant,
+                'reg_date': participant.registered_date,
+                'reg_id': team.reg_id,
+                'event_date': '24th Feb 2024',
+                'checkin': '6:00 AM',
+                'address1': 'Plot No 1/C, Sy No 83/1,',
+                'address2': 'Raidurgam panmaktha Hyderabad Knowledge City,',
+                'address3': 'Serilingampally, Hyderabad,',
+                'addrress4': 'Telangana-500081.',
+                'venue': 'THub'
+            }
+    else:
+        participants = Participant.objects.filter(team=team.id)
+        template_1 = 'Emails/delegate_pass_team.html'
+        context = {
+            'participants': participants,
+            'reg_date': participants[0].registered_date,
+            'reg_id':team.reg_id,
+            'team_name': participants[0].team.team_name,
+            'domain': participants[0].domain_of_interest.domain_name,
+            'team_size': participants[0].team.team_size,
+            'event_date': '24th Feb 2024',
+            'checkin': '6:00 AM',
+            'address1': 'Plot No 1/C, Sy No 83/1,',
+            'address2': 'Raidurgam panmaktha Hyderabad Knowledge City,',
+            'address3': 'Serilingampally, Hyderabad,',
+            'addrress4': 'Telangana-500081.',
+            'venue': 'THub'
+        }
+    return render(request,template_1,context)
+
+
+
+
 @background(schedule=1)
-def send_email_task(email_subject, text_content, from_email, email,html_content):
+def send_email_task(email_subject, text_content, from_email, email, html_content):
     msg = EmailMultiAlternatives(email_subject, text_content, from_email, [email])
     msg.attach_alternative(html_content, 'text/html')
     msg.send()
-    print("MSG Sent")
 
 
-def send_reg_success(request,participant):
+
+
+
+def send_reg_success(request, participant):
     parts = Participant.objects.filter(team_id=participant.team_id)
-    print(parts)
     for p in parts:
         subject = "Successfully Registered"
-        plaintext = template.loader.get_template('Emails/reg-success.html')
-        htmltemp = template.loader.get_template('Emails/reg-success.html')
+        plaintext = get_template('Emails/reg-success.html')
+        htmltemp = get_template('Emails/reg-success.html')
         domain = get_current_site(request).domain
         from_email = "noreply@exam.in"
+
         c = {
-            'username':p.first_name + " " + p.last_name,
-            'domain':p.domain_of_interest.domain_name,
-            'teamname':p.team.team_name,
-            'teamsize':p.team.team_size,
+            'username': p.first_name + " " + p.last_name,
+            'domain': p.domain_of_interest.domain_name,
+            'teamname': p.team.team_name,
+            'teamsize': p.team.team_size,
+            'domain_site':request.get_host(),
+            'encoded_regid':p.team.encode_regid,
         }
+
         text_content = plaintext.render(c)
         html_content = htmltemp.render(c)
-        try:
-            send_email_task(subject,text_content,from_email,p.email,html_content)
-        except BadHeaderError:
-            print("Here")
-            return HttpResponse('Invalid header found.')
 
+        try:
+            send_email_task(email_subject=subject, text_content=text_content, from_email=from_email, email=p.email, html_content=html_content)
+        except BadHeaderError:
+            print("Invalid header found.")
+            return HttpResponse('Invalid header found.')
 
 class EmailValidation(View):
     def post(self, request):

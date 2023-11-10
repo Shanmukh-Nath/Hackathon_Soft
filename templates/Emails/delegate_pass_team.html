@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Delegate Pass</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f2f2f2;
+            margin: 0;
+            padding: 0;
+        }
+        .imgs1{
+            display: none;
+        }
+        .container {
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin: 20px auto;
+            padding: 20px;
+            max-width: 600px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+        }
+
+        .header h2 {
+            font-size: 2rem;
+            margin: 10px 0;
+        }
+
+        .header h4 {
+            font-size: 1rem;
+            color: #555;
+        }
+
+        .details {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .reg-details,
+        .event-details {
+            background-color: #f9f9f9;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 48%;
+        }
+
+        .reg-details h4,
+        .event-details h4 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .reg-details p,
+        .event-details p {
+            margin: 5px 0;
+        }
+
+        .team,
+        .team-details {
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .team-details table {
+            margin-top: 10px;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
+    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="https://i.ibb.co/44sWNJB/bg.png" alt="Hack Bharat Logo">
+            <h2>Hack Bharat</h2>
+            <h4>World's largest Hackathon</h4>
+        </div>
+        <div class="details">
+            <div class="reg-details">
+                <h4>Registration Details</h4>
+                <p>Registration Date: {{ reg_date }}</p>
+                <p>Registration Number: {{ reg_id }}</p>
+                <div class="imgs">
+                    <svg id="barcode"></svg>
+                    <div id="qrcode" style="padding: 5%;"></div>
+                </div>
+            </div>
+            <div class="event-details">
+                <h4>Event Details</h4>
+                <p>Event Date: {{ event_date }}</p>
+                <p>Venue:</p>
+                <p id="main-venue">THub</p>
+                <p>{{ address1 }}</p>
+                <p>{{ address2 }}</p>
+                <p>{{ address3 }}</p>
+                <p>Check In Time: {{ checkin }}</p>
+                <div class="imgs1">
+                    <a href=""><img src="https://static.srpcdigital.com/styles/1037xauto/public/2022/12/16/maps_96in128dp.png" height="100" width="100"></a>
+                </div>
+            </div>
+        </div>
+        <div class="team">
+            <table>
+                <thead>
+                    <th>Team Name</th>
+                    <th>Theme</th>
+                    <th>Team Size</th>
+                </thead>
+                <tbody>
+                    <td>{{ team_name }}</td>
+                    <td>{{ domain }}</td>
+                    <td>{{ team_size }}</td>
+                </tbody>
+            </table>
+        </div>
+        <div class="team-details">
+            <table>
+                <thead>
+                    <tr>
+                        <th>S.No.</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Mobile</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in participants %}
+                     <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ p.first_name }}</td>
+                    <td>{{ p.email }}</td>
+                    <td>{{ p.mobile }}</td>
+                     </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    <button onclick="downloadPDF()">Download as PDF</button>
+    </div>
+    <script>
+        const reg_id = "{{ reg_id }}"
+        JsBarcode("#barcode", reg_id, {
+            format: "CODE128",
+            displayValue: true,
+        });
+        new QRCode(document.getElementById("qrcode"), {
+            text: reg_id,
+            width: 100,
+            height: 100,
+        });
+    </script>
+<script src="https://raw.githack.com/eKoopmans/html2pdf/master/dist/html2pdf.bundle.js"></script>
+
+
+
+<script>
+    function downloadPDF() {
+    const btn = document.querySelector('button');
+    btn.style.display = 'none';
+    window.print();
+    btn.style.display = 'block';
+    }
+</script>
+</body>
+
+</html>
