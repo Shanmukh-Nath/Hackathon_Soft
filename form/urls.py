@@ -24,6 +24,9 @@ urlpatterns = [
     path('superuser/delete_coordinator/<int:coordinator_id>',views.delete_coordinator_super,name='delete_coordinator_super'),
     path('superuser/add_coordinator/email-validate',views.SuperUserEmailValidation.as_view(),name='superuser_email_validate'),
     path('superuser/view_coordinator_session/', views.super_coordinator_session,name='super_session'),
+    path('superuser/download',views.superuser_download_form,name='superuser_download_form'),
+    path('superuser/verify_otp',views.super_verify_otp,name='super_verify_otp'),
+    path('superuser/verify_totp/', views.super_verify_totp, name='super_verify_totp'),
     path('superuser/edit_coordinator_session/<int:coordinator_id>', views.edit_coordinator_session, name='edit_coordinator_session'),
 
     #Coordinator URLs

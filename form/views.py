@@ -5,6 +5,7 @@ import json
 import os
 import random
 
+from cryptography.fernet import Fernet
 import pdfkit
 import pyotp
 from django.contrib import messages, auth
@@ -14,10 +15,11 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password, check_password
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
-from django.core.mail import send_mail, EmailMultiAlternatives, BadHeaderError
+from django.core.files.temp import NamedTemporaryFile
+from django.core.mail import send_mail, EmailMultiAlternatives, BadHeaderError, EmailMessage
 from django.db import IntegrityError
 
-from django.http import JsonResponse, HttpResponseRedirect, HttpResponse
+from django.http import JsonResponse, HttpResponseRedirect, HttpResponse, HttpResponseBadRequest
 from django.shortcuts import render, redirect, get_object_or_404
 from django.template.loader import render_to_string, get_template
 from django.urls import reverse
@@ -544,6 +546,43 @@ def verify_otp(request, encoded_id):
     return render(request, 'coordinator/checkin_otp_verification.html', {'participant': participant, 'otp': otp})
 
 
+
+def generate_encryption_key():
+    """
+    Generates a random encryption key.
+    """
+    return Fernet.generate_key()
+
+def encrypt_data(data, key):
+    """
+    Encrypts data using the provided key.
+    """
+    cipher = Fernet(key)
+    encrypted_data = cipher.encrypt(data.encode())
+    return encrypted_data
+
+def send_encrypted_file(email, encrypted_data):
+    """
+    Sends the encrypted file to the provided email.
+    """
+    subject = 'Encrypted Data File'
+    message = 'Attached is the encrypted data file.'
+    from_email = 'noreply@exam.in'
+    to_email = [email]
+
+    # Create a temporary file to store the encrypted data
+    with NamedTemporaryFile() as temp_file:
+        temp_file.write(encrypted_data)
+
+    # Attach the temporary file to the email
+    email = EmailMessage(subject, message, from_email, to_email)
+    email.attach_file(temp_file.name)
+    email.send()
+
+    # Delete the temporary file
+    os.remove(temp_file.name)
+
+
 def generate_registration_id():
         # Generate a random 8-digit number
     random_number = random.randint(10000000, 99999999)
@@ -565,34 +604,97 @@ def generate_otp():
     """
     return ''.join(random.choice('0123456789') for _ in range(6))
 
-'''@login_required(login_url='/coordinator/login/')
-def superuser_download(request):
+def send_otp(email,otp):
+    print(f"Original OTP : {otp}")
+    send_mail('OTP for Download',f'This is your otp {otp}','noreply@exam.in',[email])
+
+
+@login_required(login_url='/coordinator/login/')
+def super_verify_totp(request):
     if request.method == 'POST':
-        form = SuperuserDownloadForm(request.POST)
-        if form.is_valid():
+        # Get the TOTP code entered by the user
+        totp_code = request.POST.get('totp_code')
+
+        # Get the TOTP secret key from the session
+        totp_secret = request.session.get('totp_secret')
+
+        if totp_secret:
+            # Verify the TOTP code
+            totp = pyotp.TOTP(totp_secret)
+            if totp.verify(totp_code):
+                # Generate an encryption key
+                encryption_key = generate_encryption_key()
+
+                # Replace YourDataModel with your actual model
+                # Fetch the data you want to encrypt
+                data_to_encrypt = Participant.objects.all().values()
+
+                # Prepare the data in a meaningful way (modify as needed)
+                formatted_data = "\n".join([f"{item['first_name']}, {item['last_name']},, {item['email']}, {item['mobile']}" for item in data_to_encrypt])
+
+                # Encrypt the data
+                encrypted_data = encrypt_data(formatted_data, encryption_key)
+
+                # Get the email from the session or the form (replace with your actual logic)
+                email = request.session.get('superuser_email')
+
+                # Send the encrypted file to the provided email
+                send_encrypted_file(email, encrypted_data)
+
+                messages.success(request, 'Data encrypted and sent successfully.')
+                return redirect('superuser_dashboard')
+            else:
+                messages.error(request, 'Invalid TOTP code. Please try again.')
+        else:
+            messages.error(request, 'TOTP secret key not found in the session.')
+
+        return HttpResponseBadRequest('Bad Request')
+
+
+def super_verify_otp(request):
+    superuser_email = request.session['superuser_email']
+    otp = request.session['expected_otp']
+    print(otp)
+    print(request)
+    print(request.POST)
+    if otp == request.POST['combined_otp']:
+        totp_secret = generate_totp_secret()
+        request.session['totp_secret'] = totp_secret
+        totp = pyotp.TOTP(totp_secret)
+        totp_uri = totp.provisioning_uri(name=superuser_email,issuer_name='Vamshi')
+        return render(request, 'superuser/totp_request.html', {'totp_uri': totp_uri})
+    else:
+        messages.success(request, "OTP Wrong")
+        return redirect('superuser_dashboard')
+
+
+
+@login_required(login_url='/coordinator/login/')
+def superuser_download_form(request):
+    print(request)
+    if request.method == 'POST':
+            print(request.POST)
             # Validate the provided details (Name, Mobile, Email)
-            name = form.cleaned_data['name']
-            mobile = form.cleaned_data['mobile']
-            email = form.cleaned_data['email']
+            name = request.POST['name']
+            mobile = request.POST['mobile']
+            email = request.POST['email']
 
             # Check if the superuser exists and the provided details match
-            if valid_superuser(name, mobile, email):
+            if request.user.is_superuser:
                 # Generate and send OTP to the provided email
                 otp = generate_otp()
                 send_otp(email, otp)
 
                 # Save the OTP and other details in the session for verification
+
                 request.session['superuser_email'] = email
                 request.session['expected_otp'] = otp
 
-                return render(request, 'verify_otp.html')
+                return render(request, 'superuser/verify_download.html')
             else:
                 messages.error(request, 'Invalid superuser details.')
-    else:
-        form = SuperuserDownloadForm()
 
-    return render(request, 'superuser_download.html', {'form': form})
-'''
+    return render(request, 'superuser/superuser_download.html')
 
 
 

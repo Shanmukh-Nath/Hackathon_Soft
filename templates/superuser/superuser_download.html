@@ -1,0 +1,53 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Coordinator</title>
+    <style>
+        @font-face {
+  font-family: Varino;
+  src: url({% static 'fonts/Varino - Normal.ttf' %});
+}
+        @font-face {
+            font-family:Alcova ;
+            src: url("{% static 'fonts/Alcova Pro.ttf' %}");
+        }
+    body{
+        position: relative;
+    }
+    .container{
+        position: relative;
+        justify-content: center;
+    }
+
+
+    </style>
+</head>
+<body>
+<div id="addCoordinatorPage">
+        {% if messages %}
+            {% for message in messages %}
+<div class="container-fluid p-0">
+  <div class="alert {{ message.tags }}" role="alert" >
+    {{ message }}
+  </div>
+</div>
+{% endfor %}
+        {% endif %}
+    <div class="container">
+
+        <form method="post" action="{% url 'superuser_download_form' %}">
+                    {% csrf_token %}
+         <input type="text" placeholder="name" name="name">
+        <input type="number" placeholder="mobile" name="mobile" maxlength="10">
+        <input type="email" placeholder="email" name="email">
+
+        <button type="submit">Submit</button>
+            </form>
+    </div>
+</div>
+
+</body>
+</html>

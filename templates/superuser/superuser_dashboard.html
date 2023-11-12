@@ -366,6 +366,12 @@
                 View Sessions
             </a>
         </li>
+        <li>
+            <a href="#" onclick="loadContent('{% url 'superuser_download_form' %}')">
+                <i class="fa fa-list"></i> <!-- Font Awesome icon for 'View Participants' -->
+                Download
+            </a>
+        </li>
     </ul>
 <div class="logout-button">
             <form id="my_form" action="{% url 'logout' %}" method="POST">

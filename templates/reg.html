@@ -233,6 +233,19 @@
                 top: 10%;
                 left: 25%;
             }
+            p{
+                    position: absolute;
+    width: 100%;
+    left: 110%;
+    font-size: 1rem;
+    background: rgba(255,0,0,0.6);
+    text-align: center;
+    height: 5%;
+    justify-content: center;
+    display: flex;
+                border-radius: 15px;
+    flex-direction: column;
+            }
 
         }
     </style>
@@ -278,7 +291,7 @@
                 <div class="form-group">
                     <label for="mobile">Mobile</label>
                     {{ form.mobile }}
-                                    <div class="mobile-feedback invalid-feedback" style="display: none">
+                                    <div class="mobile-feedback invalid-feedback" style="display: none;">
                     <p></p>
 
                 </div>
@@ -299,6 +312,7 @@
                 <div class="form-group">
                     <label for="college">College</label>
                     {{ form.college }}
+                    <div class="clg-feedback invalid-feedback" style="display: none"></div>
                 </div>
                 <div class="form-group">
                     <label for="state">State</label>
@@ -356,7 +370,7 @@
     <div id="team-name"></div>
 
     <div id="submit-button">
-        <input type="submit" value="Submit">
+        <input type="submit" value="Submit" id="submit" disabled>
     </div>
 </div>
 </form>
@@ -470,6 +484,37 @@ animate();
 
 {#  End  #}
 
+var clg = document.getElementById('id_college');
+clg.addEventListener('keyup',function (){
+    array = ['malla reddy university','mru','mruh','mr university','m r university']
+    if (array.includes(clg.value.toLowerCase().trim())){
+        document.querySelector('.clg-feedback').style.display = 'flex';
+        document.querySelector('.clg-feedback').innerHTML = `<p
+    style='
+    width: 100%;
+    top: 43%;
+    left: 110%;
+    font-size: 1rem;
+    background: rgba(255,0,0,0.6);
+    text-align: center;
+    height: 5%;
+    justify-content: center;
+    position: absolute;
+    display: flex;
+    border-radius: 15px;
+    flex-direction: column;'>Your College is not allowed</p>`;
+        document.getElementById('submit').style.display = 'none';
+    }else{
+        document.querySelector('.clg-feedback').style.display = 'none';
+        document.querySelector('.clg-feedback').innerHTML = ``;
+        document.getElementById('submit').style.display = 'block';
+    }
+
+})
+
+
+
+
 function adjustextra(){
     const extra = document.querySelector('.extra');
     extra.style.top = '85%';
@@ -490,9 +535,9 @@ function adjustMainFormPosition() {
     const teamMembers = document.querySelectorAll('.form-container');
     const mainForm = document.querySelector('.main-form');
     if(window.innerWidth<=980){
-        const maxOffset = 0
+        var maxOffset = 0;
     }else {
-        const maxOffset = 120;
+        var maxOffset = 120;
     }// Set your desired maximum offset percentage
     if (teamMembers.length === 1) {
         mainForm.style.transform = 'translateX(0)';// Move the main form to the left
@@ -552,11 +597,53 @@ function adjustMainFormPosition() {
                     if (data.email_error) {
                         emailField.classList.add('is-invalid');
                         emailFeedbackField.style.display = 'block';
-                        emailFeedbackField.innerHTML = `<p>${data.email_error}</p>`;
+                        emailFeedbackField.innerHTML = `<p
+                                            style='
+position: absolute;
+    width: 100%;
+    top: -9%;
+    z-index: 1;
+    left: 250%;
+    background: rgba(255,0,0,0.6);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 5%;
+    text-align: center;
+    border-radius: 15px;
+    font-size: 1rem;'>${data.email_error}</p>`;
                     }
                 });
             }
         });
+    }
+    function setupClgValidation(clg,clgfeedback){
+clg.addEventListener('keyup',function (){
+    array = ['malla reddy university','mru','mruh','mr university','m r university']
+    if (array.includes(clg.value.toLowerCase().trim())){
+        clgfeedback.style.display = 'flex';
+        clgfeedback.innerHTML = `<p
+    style='
+    width: 100%;
+    top: 43%;
+    left: 110%;
+    font-size: 1rem;
+    background: rgba(255,0,0,0.6);
+    text-align: center;
+    height: 5%;
+    justify-content: center;
+    position: absolute;
+    display: flex;
+    border-radius: 15px;
+    flex-direction: column;'>Your College is not allowed</p>`;
+        document.getElementById('submit').style.display = 'none';
+    }else{
+        clgfeedback.style.display = 'none';
+        clgfeedback.innerHTML = ``;
+        document.getElementById('submit').style.display = 'block';
+    }
+
+})
     }
 
     // Mobile Validation
@@ -585,7 +672,21 @@ function adjustMainFormPosition() {
                     if (data.mobile_error) {
                         mobileField.classList.add('is-invalid');
                         mobileFeedbackField.style.display = 'block';
-                        mobileFeedbackField.innerHTML = `<p>${data.mobile_error}</p>`;
+                        mobileFeedbackField.innerHTML = `<p
+                                            style='
+position: absolute;
+    width: 100%;
+top: -9%;
+    z-index: 1;
+    left: 350%;
+    background: rgba(255,0,0,0.6);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 5%;
+    text-align: center;
+    border-radius: 15px;
+    font-size: 1rem;'>${data.mobile_error}</p>`;
                     }
                 });
             }
@@ -621,6 +722,7 @@ document.onmouseup = () => {
         while (teamMembersDiv.firstChild) {
             teamMembersDiv.removeChild(teamMembersDiv.firstChild);
         }
+        teamMembersDiv.style.zIndex = '-1';
         const teamname = document.getElementById('team-name');
         teamname.innerHTML = `
         <h3 id="team-name-label"> Team Name </h3>
@@ -723,6 +825,9 @@ document.onmouseup = () => {
                 </select>
                 <label for="team_member_college_${i}">College:</label>
                 <input type="text" name="team_member_college_${i}"><br>
+                <div class="clg-feedback invalid-feedback" style="display: none">
+                    <p></p>
+                </div>
                 <label for="team_member_aadhar_${i}">Aadhar:</label>
                 <input type="text" name="team_member_aadhar_${i}"><br>
                 <label>Meals:</label>
@@ -751,6 +856,10 @@ document.onmouseup = () => {
             // Select email and mobile feedback fields
             const newEmailFeedbackField = memberDiv.querySelector('.email-feedback');
             const newMobileFeedbackField = memberDiv.querySelector('.mobile-feedback');
+
+            const clg = memberDiv.querySelector(`input[name="team_member_college_${i}"]`);
+            const clgfeedback = memberDiv.querySelector('.clg-feedback');
+            setupClgValidation(clg,clgfeedback);
             // Setup email validation for the new email field
             setupEmailValidation(newEmailField, newEmailValidOut, newEmailFeedbackField);
             // Setup mobile validation for the new mobile field
@@ -797,7 +906,20 @@ document.onmouseup = () => {
                 if (data.email_error) {
                     emailField.classList.add('is-invalid');
                     emailFeedbackField.style.display = 'block';
-                    emailFeedbackField.innerHTML = `<p>${data.email_error}</p>`;
+                    emailFeedbackField.innerHTML = `<p
+                                            style='
+position: absolute;
+    width: 100%;
+    z-index: 1;
+    left: 110%;
+    background: rgba(255,0,0,0.6);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 5%;
+    text-align: center;
+    border-radius: 15px;
+    font-size: 1rem;'>${data.email_error}</p>`;
                 }
             });
         }
@@ -826,7 +948,19 @@ document.onmouseup = () => {
                 if (data.mobile_error) {
                     mobileField.classList.add('is-invalid');
                     mobileFeedbackField.style.display = 'block';
-                    mobileFeedbackField.innerHTML = `<p>${data.mobile_error}</p>`;
+                    mobileFeedbackField.innerHTML = `<p style='
+position: absolute;
+    width: 100%;
+    top: 10%;
+    left: 110%;
+    background: rgba(255,0,0,0.6);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 5%;
+    text-align: center;
+    border-radius: 15px;
+    font-size: 1rem;'>${data.mobile_error}</p>`;
                 }
             });
         }

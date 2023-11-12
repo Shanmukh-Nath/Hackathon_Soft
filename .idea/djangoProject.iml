@@ -33,6 +33,8 @@
     <orderEntry type="library" name="html2pdf.bundle" level="application" />
     <orderEntry type="library" name="jspdf" level="application" />
     <orderEntry type="library" name="html2canvas" level="application" />
+    <orderEntry type="library" name="boxicons" level="application" />
+    <orderEntry type="library" name="qrcode" level="application" />
   </component>
   <component name="TemplatesService">
     <option name="TEMPLATE_CONFIGURATION" value="Django" />
