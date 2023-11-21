@@ -353,6 +353,18 @@
     font-size: 1rem;
     font-weight: 600;
 }
+.alert.alert-warning {
+    position: absolute;
+    left: 15%;
+    top: 3%;
+    margin-bottom: 15px;
+    background: rgba(255,255,0,0.6);
+    padding: 10px;
+    border-radius: 10px;
+    color: black;
+    font-size: 1rem;
+    font-weight: 600;
+}
 
     </style>
 </head>
@@ -459,9 +471,7 @@
             xhr.open('GET', url, true);
             xhr.send();
         }
-        window.onload = function (e){
-            console.log("Here");
-        }
+
 
 
 
@@ -472,7 +482,6 @@ function checkForAddCoordinatorPage() {
     const addCoordinatorPage = document.getElementById('addCoordinatorPage');
     if (addCoordinatorPage) {
         // The "add_coordinator" page is loaded, do something here
-        console.log("Add Coordinator Page is loaded!");
         const emailField = document.getElementById('id_email');
         const emailValidOut = document.querySelector('.email-valid-out');
         const emailFeedbackField = document.querySelector('.email-feedback');
@@ -491,7 +500,6 @@ contentDiv.addEventListener('DOMSubtreeModified', checkForAddCoordinatorPage);
 checkForAddCoordinatorPage();
 function setupEmailValidation(emailField, emailValidOut, emailFeedbackField) {
         emailField.addEventListener('keyup', (e) => {
-            console.log("hi");
             const emailValue = e.target.value;
             emailValidOut.style.display = 'block';
             emailField.classList.remove('is-invalid');
@@ -538,8 +546,6 @@ function getCookie(name) {
 }
 {#setupEmailValidation(emailField,emailValidOut,emailFeedbackField);#}
  window.onbeforeunload =  function (e) {
-
-            console.log("Here");
         e.preventDefault();
         e.returnValue = ''; // This empty string will prompt a confirmation dialog.
         alert("You did not Logout");

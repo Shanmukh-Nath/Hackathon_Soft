@@ -27,14 +27,14 @@
     <orderEntry type="library" name="html5-qrcode" level="application" />
     <orderEntry type="library" name="three" level="application" />
     <orderEntry type="library" name="three.js" level="application" />
-    <orderEntry type="library" name="qrcode" level="application" />
     <orderEntry type="library" name="jsbarcode" level="application" />
     <orderEntry type="library" name="font-awesome" level="application" />
-    <orderEntry type="library" name="html2pdf.bundle" level="application" />
     <orderEntry type="library" name="jspdf" level="application" />
+    <orderEntry type="library" name="qrcode" level="application" />
     <orderEntry type="library" name="html2canvas" level="application" />
     <orderEntry type="library" name="boxicons" level="application" />
-    <orderEntry type="library" name="qrcode" level="application" />
+    <orderEntry type="library" name="html2pdf.bundle" level="application" />
+    <orderEntry type="library" name="html5-qrcode" level="application" />
   </component>
   <component name="TemplatesService">
     <option name="TEMPLATE_CONFIGURATION" value="Django" />

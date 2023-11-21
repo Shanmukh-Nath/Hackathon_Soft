@@ -101,11 +101,20 @@ class ParticipantType(models.Model):
     def __str__(self):
         return self.type
 
+
+class Gender(models.Model):
+    gender = models.CharField(max_length=100,null=True,blank=True)
+
+    def __str__(self):
+        return self.gender
+
+
 class Participant(models.Model):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     date_of_birth = models.CharField(max_length=100)
     email = models.EmailField(unique=True)
+    gender = models.ForeignKey(Gender,on_delete=models.CASCADE,null=True,blank=True)
     mobile = models.CharField(max_length=10,unique=True)
     state = models.ForeignKey(State,on_delete=models.CASCADE)
     college = models.CharField(max_length=100)

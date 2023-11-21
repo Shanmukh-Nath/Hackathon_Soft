@@ -13,25 +13,39 @@
             color: blue;
 
         }
-        #cancel{
-                padding: 0.5rem;
-    position: absolute;
-    left: 40%;
-    top: 80%;
-            font-family: poppins, sans-serif;
-    width: 20%;
-            text-transform: uppercase;
-            font-weight: 400;
-            color: rgba(0,0,0,0.6);
-    font-size: 1.5rem;
-    border: 3px solid rgb(255,163,102);
-    background: none;
-    border-radius: 1.5rem;
-            transition: 0.5s ease;
+        #result{
+            padding: 5%;
+            width: 100%;
         }
-        #cancel:hover{
+#buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        #confirm,
+        #cancel {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
             cursor: pointer;
-            background: rgb(255,163,103);
+            font-size: 1.2rem;
+            font-weight: 700;
+            transition: background-color 0.3s ease;
+        }
+
+        #confirm {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        #cancel {
+            background-color: #f44336;
+            color: white;
+        }
+
+        #confirm:hover,
+        #cancel:hover {
+            background-color: rgba(0, 0, 0, 0.8);
         }
     </style>
 </head>
@@ -51,7 +65,12 @@
     #result {
         text-align: center;
         font-size: 1.5rem;
+        border: 3px solid black;
     }
+    #confirm{
+
+    }
+
 </style>
 
 <main>
@@ -72,6 +91,8 @@
 <script>
     const cnfrm = document.getElementById('buttons');
     cnfrm.style.display = 'none';
+    const div = document.getElementById('result');
+    div.style.display = 'none';
     const scan = document.getElementById('qrcode');
     const scanner = new Html5QrcodeScanner('reader', {
         qrbox: {
@@ -86,11 +107,18 @@
 
     function success(result) {
         scan.value = result;
+        div.style.display = 'block';
         cnfrm.style.display = 'block';
         document.getElementById('result').innerHTML = `
         <h2>Details</h2>
         <h4>QR Code : ${result}</h4>
         <p>{{ part.first_name }}</p>
+        <p>{{ part.participant_id }}</p>
+        <p>{{ part.team.reg_id }}</p>
+        {% if part.team.team_name != 'SOLO' %}
+        <p>{{ part.team.team_name }}</p>
+        {% endif %}
+
         `;
 
         scanner.clear();

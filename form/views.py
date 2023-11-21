@@ -37,7 +37,7 @@ from .tokens import complex_token_generator
 from .forms import RegistrationForm, SuperuserLoginForm, SuperCoordinatorForm, CoordinatorForm, CoordinatorEditForm, \
     ParticipantEditForm, UserProfileEditForm, SuperuserDownloadForm
 from .models import Participant, Team, Domain, Coordinator, UserProfile, CheckInOTP, State, Meals, QRCode, \
-    ParticipantType
+    ParticipantType, Gender
 
 
 def send_invitations(request):
@@ -69,8 +69,6 @@ def send_invitations(request):
             coordinator.save()
 
     return redirect('superuser_dashboard')  # Redirect to a success page
-
-
 
 def setup_coordinator_account(request):
     uid = request.GET.get('uid')
@@ -133,8 +131,6 @@ def link_coordinator_validation(request, uidb64, token):
         print("Error")
     return redirect('invalid_activation_link')
 
-
-
 def coordinator_login(request):
     if request.user.is_authenticated:
         if request.user.is_active:
@@ -162,7 +158,7 @@ def coordinator_login(request):
                         user_profile[0].current_session_id = request.session.session_key
                         user_profile[0].last_login = timezone.now()
                         user_profile[0].save()
-                        messages.success(request,"Please do not Forget to logout while closing the browser or else you will be locked out.")
+                        messages.warning(request,"Please do not Forget to logout while closing the browser or else you will be locked out.")
                         return redirect('coordinator_dashboard')
             else:
                 print("invalid")
@@ -292,11 +288,6 @@ def logout(request):
 def invalid_activation_link(request):
     return render(request, 'coordinator/invalid_token.html')
 
-
-def force_text(param):
-    pass
-
-
 def superuser_login(request):
     if request.user.is_authenticated:
         if request.user.is_superuser:
@@ -319,39 +310,6 @@ def superuser_login(request):
 
     return render(request, 'superuser/superuser_login.html')
 
-
-'''class SessionTimeoutMiddleware:
-    print("Here")
-    def __init__(self, get_response):
-        self.get_response = get_response
-
-    def __call__(self, request):
-        response = self.get_response(request)
-
-        # Check if the user is authenticated and has a UserProfile
-        if request.user.is_authenticated:
-            try:
-                print("Here")
-                user_profile = UserProfile.objects.get(user=request.user)
-
-                # Check if the session has expired (e.g., after 30 minutes)
-                session_timeout = 2600  # 30 minutes in seconds
-                last_login = user_profile.last_login
-                current_time = timezone.now()
-                if last_login and (current_time - last_login).total_seconds() > session_timeout:
-                    print((current_time-last_login).total_seconds())
-                    user_profile.is_logged_in = False
-                    user_profile.current_session_id = None
-                    user_profile.save()
-                    auth.logout(request)
-            except UserProfile.DoesNotExist:
-                pass  # UserProfile not found, no need to check session timeout
-
-        return response
-'''
-
-
-
 @login_required(login_url='/superuser/login/')
 def send_invite(request):
     coordinators = Coordinator.objects.all()
@@ -372,7 +330,6 @@ def superuser_dashboard(request):
     else:
         return redirect('coordinator_login')
 
-
 @login_required(login_url='/superuser/login/')
 def delete_coordinator_super(request, coordinator_id):
     coor = Coordinator.objects.get(pk=coordinator_id)
@@ -383,7 +340,6 @@ def delete_coordinator_super(request, coordinator_id):
     coor.delete()
     messages.warning(request, f"User '{email}' has been deleted successfully.")
     return redirect('superuser_dashboard')
-
 
 @login_required(login_url='/superuser/login/')
 def add_coordinator(request):
@@ -398,8 +354,6 @@ def add_coordinator(request):
     else:
         form = SuperCoordinatorForm()
     return render(request, "superuser/add_coordinator.html", {"form": form})
-
-
 
 @login_required(login_url='/coordinator/login/')
 def part_check_in(request):
@@ -467,6 +421,19 @@ def is_valid_qr_code(request,qrcode):
         return True
 
 
+def generate_partid(participant):
+    random_number = random.randint(10000, 99999)
+    id = str(random_number)
+    # Create the registration ID by combining 'HBR' and the random number
+    did = str(participant.domain_of_interest.id)
+    if len(did)==1:
+        part_id = 'HBP'+f'{did.zfill(2)}'+'0'+f'{id.zfill(5)}'
+    else:
+        part_id = 'HBP' + f'{did}' + '0' + f'{id.zfill(5)}'
+
+
+    return part_id
+
 def generate_otp(participant):
     try:
         # Try to retrieve an existing OTP for the participant
@@ -497,13 +464,10 @@ def generate_otp(participant):
 
     return otp
 
-
 @login_required(login_url='/coordinator/login/')
 def verify_otp(request, encoded_id):
     if request.method == 'POST':
-        print(request.POST)
         otp_entered = request.POST.get('combined_otp')
-        print(otp_entered)
         participant_id = int(base64.b64decode(encoded_id.encode()).decode())
         participant = Participant.objects.get(id=participant_id)
 
@@ -513,9 +477,11 @@ def verify_otp(request, encoded_id):
 
             # Check if the OTP is within the allowed time frame (e.g., 5 minutes)
             if (timezone.now() - checkin_otp.sent_time).total_seconds() <= 300 and otp_entered == checkin_otp.otp:
+                partid = generate_partid(participant)
                 checkin_otp.usage_time = timezone.now()
                 checkin_otp.is_expired = True
                 checkin_otp.save()
+                participant.participant_id = partid
                 participant.is_checkedin = True
                 participant.save()
 
@@ -544,8 +510,6 @@ def verify_otp(request, encoded_id):
     messages.success(request, "OTP Successfully Sent")
 
     return render(request, 'coordinator/checkin_otp_verification.html', {'participant': participant, 'otp': otp})
-
-
 
 def generate_encryption_key():
     """
@@ -582,7 +546,6 @@ def send_encrypted_file(email, encrypted_data):
     # Delete the temporary file
     os.remove(temp_file.name)
 
-
 def generate_registration_id():
         # Generate a random 8-digit number
     random_number = random.randint(10000000, 99999999)
@@ -598,7 +561,7 @@ def generate_totp_secret():
     """
     return pyotp.random_base32()
 
-def generate_otp():
+def generate_otp_super():
     """
     Generates a random 6-digit OTP.
     """
@@ -608,8 +571,7 @@ def send_otp(email,otp):
     print(f"Original OTP : {otp}")
     send_mail('OTP for Download',f'This is your otp {otp}','noreply@exam.in',[email])
 
-
-@login_required(login_url='/coordinator/login/')
+@login_required(login_url='/superuser/login/')
 def super_verify_totp(request):
     if request.method == 'POST':
         # Get the TOTP code entered by the user
@@ -650,13 +612,9 @@ def super_verify_totp(request):
 
         return HttpResponseBadRequest('Bad Request')
 
-
 def super_verify_otp(request):
     superuser_email = request.session['superuser_email']
     otp = request.session['expected_otp']
-    print(otp)
-    print(request)
-    print(request.POST)
     if otp == request.POST['combined_otp']:
         totp_secret = generate_totp_secret()
         request.session['totp_secret'] = totp_secret
@@ -666,8 +624,6 @@ def super_verify_otp(request):
     else:
         messages.success(request, "OTP Wrong")
         return redirect('superuser_dashboard')
-
-
 
 @login_required(login_url='/coordinator/login/')
 def superuser_download_form(request):
@@ -682,7 +638,7 @@ def superuser_download_form(request):
             # Check if the superuser exists and the provided details match
             if request.user.is_superuser:
                 # Generate and send OTP to the provided email
-                otp = generate_otp()
+                otp = generate_otp_super()
                 send_otp(email, otp)
 
                 # Save the OTP and other details in the session for verification
@@ -698,7 +654,24 @@ def superuser_download_form(request):
 
 
 
+def mru_success(request):
+    return render(request,'mru_success.html')
+
+
+def mru_elimination(participant):
+    ban_list = ['malla reddy university','mru','mruh','mr university','m r university','m r u','mru hyderabad','m r u h','mruhyd','mru hyd']
+    if str(participant.college).lower().strip() in ban_list:
+        team = Team.objects.get(id=participant.team_id)
+        team.delete()
+        participant.delete()
+        return True
+    else:
+        return False
+
+
+
 def registration(request):
+    global participant, team
     if request.method == 'POST':
         try:
             form = RegistrationForm(request.POST)
@@ -719,8 +692,11 @@ def registration(request):
                     team.save()
                     participant.team = team
                     participant.save()
-                    send_reg_success(request,participant)
-                    return redirect('success')
+                    if mru_elimination(participant):
+                        return redirect('mru_success')
+                    else:
+                        send_reg_success(request, participant)
+                        return redirect('success')
                 else:
                     participant.is_individual = False
 
@@ -758,15 +734,15 @@ def registration(request):
                                 return redirect('registration')
                             else:
                                 # print(request.POST.get(f'team_member_state_{i}'))
+                                gender = Gender.objects.get(f'team_member_get_{i}')
                                 state = State.objects.get(state_name=request.POST.get(f'team_member_state_{i}'))
-                                print(state)
-                                print(state.id)
                                 meal = Meals.objects.get(meal_name=request.POST.get(f'team_member_meals_{i}'))
                                 type = ParticipantType.objects.get(type=request.POST.get(f'team_member_type_{i}'))
                                 team_member = Participant(
                                     first_name=request.POST.get(f'team_member_first_name_{i}'),
                                     last_name=request.POST.get(f'team_member_last_name_{i}'),
                                     date_of_birth=request.POST.get(f'team_member_date_of_birth_{i}'),
+                                    gender = gender,
                                     email=request.POST.get(f'team_member_email_{i}'),
                                     mobile=request.POST.get(f'team_member_mobile_{i}'),
                                     state=state,
@@ -784,8 +760,11 @@ def registration(request):
                             team.delete()
                             messages.error(request,"You cannot use same details in form, please check the data of these unique fields - Email, Mobile, Aadhar.")
                             return redirect('registration')
-                        send_reg_success(request,participant)
-                        return redirect('success')
+                        if mru_elimination(participant):
+                            return redirect('mru_success')
+                        else:
+                            send_reg_success(request,participant)
+                            return redirect('success')
         except(Exception):
             participant.delete()
             team.delete()
@@ -795,8 +774,6 @@ def registration(request):
     else:
         form = RegistrationForm()
     return render(request, 'reg.html', {'form': form})
-
-
 
 def delegate_pass(request,encoded_regid):
     reg_id = base64.b64decode(encoded_regid.encode()).decode()
@@ -836,18 +813,11 @@ def delegate_pass(request,encoded_regid):
         }
     return render(request,template_1,context)
 
-
-
-
 @background(schedule=1)
 def send_email_task(email_subject, text_content, from_email, email, html_content):
     msg = EmailMultiAlternatives(email_subject, text_content, from_email, [email])
     msg.attach_alternative(html_content, 'text/html')
     msg.send()
-
-
-
-
 
 def send_reg_success(request, participant):
     parts = Participant.objects.filter(team_id=participant.team_id)
@@ -882,7 +852,7 @@ class EmailValidation(View):
         email = data['email']
 
         if Participant.objects.filter(email=email).exists():
-            return JsonResponse({'email_error': 'Email is already registered'}, status=409)
+            return JsonResponse({'email_error': f'{email} is already registered'}, status=409)
 
         return JsonResponse({'email_valid': True})
 
@@ -892,9 +862,15 @@ class MobileValidation(View):
         mobile = data['mobile']
 
         if Participant.objects.filter(mobile=mobile).exists():
-            return JsonResponse({'mobile_error': 'Mobile is already registered'}, status=409)
+            return JsonResponse({'mobile_error': f'{mobile} is already registered'}, status=409)
 
         return JsonResponse({'mobile_valid': True})  # Modify this as per your validation logic
+
+
+
+
+
+
 
 class TeamNameValidation(View):
     def post(self, request):
@@ -903,7 +879,7 @@ class TeamNameValidation(View):
 
 
         if Team.objects.filter(team_name=team_name).exists():
-            return JsonResponse({'team_name_error': 'Team Name already taken'}, status=400)
+            return JsonResponse({'team_name_error': f'{team_name} already taken'}, status=400)
 
         return JsonResponse({'team_name_valid': True})
 
@@ -948,7 +924,6 @@ class SuperUserEmailValidation(View):
                 return JsonResponse({'email_error': 'Email is already registered'}, status=409)
 
         return JsonResponse({'email_valid': True})
-
 
 def success(request):
     print(request.POST)
