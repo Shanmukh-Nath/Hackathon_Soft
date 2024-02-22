@@ -47,4 +47,10 @@ urlpatterns = [
     path('coordinator/qr_assign/<str:encoded_id>', views.qr_scan, name='part_qr_assign'),
     path('coordinator/qr_check/', views.part_qr_check, name='part_qr_success_list'),
     path('verify_otp/<str:encoded_id>/', views.verify_otp, name='verify_otp'),
+    path('coordinator/merch_checkin',views.merch_checkin,name='merch_list'),
+    path('coordinator/merch',views.merch,name='merch'),
+    path('coordinator/merch_success',views.merch_checkin_success,name='merch_success'),
+    path('coordinator/meals_checkin',views.meals_checkin,name='meals_list'),
+    path('coordinator/meals',views.meals_in,name='meals'),
+    path('coordinator/meals,success',views.merch_checkin_success,name='meals_success'),
 ]

@@ -4,7 +4,9 @@ import datetime
 import json
 import os
 import random
+from email.mime.application import MIMEApplication
 
+import openpyxl
 from cryptography.fernet import Fernet
 import pdfkit
 import pyotp
@@ -525,7 +527,7 @@ def encrypt_data(data, key):
     encrypted_data = cipher.encrypt(data.encode())
     return encrypted_data
 
-def send_encrypted_file(email, encrypted_data):
+def send_encrypted_file(email, encrypted_data, filename):
     """
     Sends the encrypted file to the provided email.
     """
@@ -534,17 +536,16 @@ def send_encrypted_file(email, encrypted_data):
     from_email = 'noreply@exam.in'
     to_email = [email]
 
-    # Create a temporary file to store the encrypted data
-    with NamedTemporaryFile() as temp_file:
-        temp_file.write(encrypted_data)
+    with open(encrypted_data, 'rb') as file:
+        attachment = MIMEApplication(file.read(), Name=os.path.basename(filename))
+        attachment['Content-Disposition'] = f'attachment; filename={os.path.basename(filename)}'
 
-    # Attach the temporary file to the email
-    email = EmailMessage(subject, message, from_email, to_email)
-    email.attach_file(temp_file.name)
-    email.send()
+        # Attach the file to the email
+        email = EmailMessage(subject, message, from_email, to_email)
+        email.attach(attachment)
+        email.send()
 
-    # Delete the temporary file
-    os.remove(temp_file.name)
+
 
 def generate_registration_id():
         # Generate a random 8-digit number
@@ -571,6 +572,20 @@ def send_otp(email,otp):
     print(f"Original OTP : {otp}")
     send_mail('OTP for Download',f'This is your otp {otp}','noreply@exam.in',[email])
 
+def create_protected_csv(data, filename, password):
+    """
+    Creates a password-protected CSV file with the provided data.
+    """
+    # Combine data into a CSV-formatted string
+    csv_content = '\n'.join([','.join(map(str, row)) for row in data])
+
+    # Encrypt the CSV content (replace this with your encryption logic)
+    encrypted_content = encrypt_function(csv_content, password)
+
+    with open(filename, 'wb') as file:
+        file.write(encrypted_content)
+
+
 @login_required(login_url='/superuser/login/')
 def super_verify_totp(request):
     if request.method == 'POST':
@@ -585,23 +600,20 @@ def super_verify_totp(request):
             totp = pyotp.TOTP(totp_secret)
             if totp.verify(totp_code):
                 # Generate an encryption key
-                encryption_key = generate_encryption_key()
+                model = Participant.objects.all()
+                data = [
+                    ['First Name', 'Last Name', 'Mobile', 'Email', 'College']
+                ]
+                for d in model:
+                    data.append([d.first_name, d.last_name, d.mobile, d.email, d.college])
 
-                # Replace YourDataModel with your actual model
-                # Fetch the data you want to encrypt
-                data_to_encrypt = Participant.objects.all().values()
-
-                # Prepare the data in a meaningful way (modify as needed)
-                formatted_data = "\n".join([f"{item['first_name']}, {item['last_name']},, {item['email']}, {item['mobile']}" for item in data_to_encrypt])
-
-                # Encrypt the data
-                encrypted_data = encrypt_data(formatted_data, encryption_key)
-
-                # Get the email from the session or the form (replace with your actual logic)
                 email = request.session.get('superuser_email')
+                filename = os.path.join(settings.MEDIA_ROOT, f'{email[:5]}.csv')
+                password = '123456'
+                create_protected_csv(data, filename, password)
 
                 # Send the encrypted file to the provided email
-                send_encrypted_file(email, encrypted_data)
+                send_encrypted_file(email, filename, filename)
 
                 messages.success(request, 'Data encrypted and sent successfully.')
                 return redirect('superuser_dashboard')
@@ -611,6 +623,26 @@ def super_verify_totp(request):
             messages.error(request, 'TOTP secret key not found in the session.')
 
         return HttpResponseBadRequest('Bad Request')
+
+
+def merch_checkin(request):
+    participants = Participant.objects.filter(is_qrassigned=True)
+    return render(request,'coordinator/merch_list.html',{'coordinator':participants})
+
+def merch(request,encoded_id):
+    pass
+
+def merch_checkin_success(request):
+    pass
+
+def meals_checkin(request):
+    pass
+
+def meals_in(request,encoded_id):
+    pass
+
+def meals_checkin_success(request):
+    pass
 
 def super_verify_otp(request):
     superuser_email = request.session['superuser_email']
