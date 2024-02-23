@@ -8,7 +8,6 @@ from email.mime.application import MIMEApplication
 
 import openpyxl
 from cryptography.fernet import Fernet
-import pdfkit
 import pyotp
 from django.contrib import messages, auth
 from django.contrib.auth import login, authenticate, get_user_model
@@ -32,7 +31,6 @@ from django import template
 from django.views import View
 from django.contrib.auth.models import User
 from background_task import background
-from weasyprint import HTML, CSS
 
 from djangoProject import settings
 from .tokens import complex_token_generator
@@ -572,18 +570,7 @@ def send_otp(email,otp):
     print(f"Original OTP : {otp}")
     send_mail('OTP for Download',f'This is your otp {otp}','noreply@exam.in',[email])
 
-def create_protected_csv(data, filename, password):
-    """
-    Creates a password-protected CSV file with the provided data.
-    """
-    # Combine data into a CSV-formatted string
-    csv_content = '\n'.join([','.join(map(str, row)) for row in data])
 
-    # Encrypt the CSV content (replace this with your encryption logic)
-    encrypted_content = encrypt_function(csv_content, password)
-
-    with open(filename, 'wb') as file:
-        file.write(encrypted_content)
 
 
 @login_required(login_url='/superuser/login/')
@@ -610,7 +597,7 @@ def super_verify_totp(request):
                 email = request.session.get('superuser_email')
                 filename = os.path.join(settings.MEDIA_ROOT, f'{email[:5]}.csv')
                 password = '123456'
-                create_protected_csv(data, filename, password)
+                #create_protected_csv(data, filename, password)
 
                 # Send the encrypted file to the provided email
                 send_encrypted_file(email, filename, filename)
