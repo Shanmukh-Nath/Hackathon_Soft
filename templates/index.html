@@ -1,108 +1,225 @@
-{% load static %}
-
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Index</title>
+    <title>Home</title>
     <style>
-        body{
-            margin: 0;
-            overflow: hidden;
-            position: relative;
+body {
+    background-color: white;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
 
-        }
-        canvas{
-            width: auto;
-            height:auto;
-            z-index: -1;
-            position: absolute;
-        }
-        h1{
-            z-index: 1;
-            position: absolute;
-        }
+.features,.workflow{
+    position: relative;
+    left: 10%;
+    width: 75%;
+}
+.features{
+    color: #fff748;
+    {#color: #fff748;#}
+}
+.buttons {
+    position: relative;
+    top: 60%;
+    left: 12%;
+    width: 75%;
+    text-align: center;
+    margin-top: 20px;
+}
+
+
+#button {
+    margin: 1%;
+    font-size: 16px;
+    font-weight: 200;
+    letter-spacing: 1px;
+    padding: 13px 20px 13px;
+    outline: 0;
+    border: 1px solid black;
+    cursor: pointer;
+    position: relative;
+    background-color: rgba(0, 0, 0, 0);
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+}
+
+#button:after {
+    content: "";
+    background-color: #ffe54c;
+    width: 100%;
+    z-index: -1;
+    position: absolute;
+    height: 100%;
+    top: 7px;
+    left: 7px;
+    transition: 0.2s;
+}
+
+#button:hover:after {
+    top: 0px;
+    left: 0px;
+}
+
+@media (min-width: 768px) {
+    #button {
+        padding: 13px 50px 13px;
+    }
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+#feat{
+    margin: 1%;
+    left: 1%;
+    background: none;
+    font-size: 16px;
+    font-weight: 200;
+    letter-spacing: 1px;
+    padding: 13px 20px 13px;
+    outline: 0;
+    border-top: 1px solid black;
+    border-bottom: 1px solid black;
+    border-right: none;
+    border-left: none;
+    cursor: pointer;
+    width: 96%;
+    position: relative;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+}
+#feat:after {
+    content: "";
+    background-color: antiquewhite;
+    width: 100%;
+    z-index: -1;
+    position: absolute;
+    height: 100%;
+    top: 7px;
+    left: 7px;
+    transition: 0.2s;
+}
+
+#feat:hover:after {
+    top: 0px;
+    left: 0px;
+}
+.top-head{
+    color: #014122;
+    background: #c0dfe7;
+    position: relative;
+    font-size: 1.2rem;
+    left: 0%;
+    font-weight: 600;
+    display: flex;
+    flex-direction: column;
+    align-content: center;
+    justify-content: center;
+    align-items: center;
+
+}
+.heading{
+    position: relative;
+    background: lavender;
+
+}
+.head{
+    color: cornflowerblue;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    height: 10vh;
+}
+{#.ft{#}
+{#    display: none;#}
+{#    z-index: -1;#}
+{#    background: #3c1a5b;#}
+{#    width: 100%;#}
+{#    padding: 0.5%;#}
+{#}#}
+
     </style>
+    <script>
+        function feature(){
+            var x = document.getElementById('feature');
+            var y = document.getElementById('ft');
+            if(x.style.display === 'none'){
+                x.style.display = 'block';
+                y.style.display='block';
+            }else{
+                x.style.display='none';
+                y.style.display='none';
+            }
+        }
+        function workflow(){
+            var x = document.getElementById('workflow');
+            if(x.style.display === 'none'){
+                x.style.display = 'block';
+            }else{
+                x.style.display='none';
+            }
+        }
+    </script>
 </head>
 <body>
-    <script src="{% static 'js/three.min.js' %}"></script>
-    <script src="{% static 'js/EffectComposer.js' %}"></script>
-    <script src="{% static 'js/UnrealBloomPass.js' %}"></script>
-    <script src="{% static 'js/RenderPass.js' %}"></script>
-    <script src="{% static 'js/CopyShader.js' %}"></script>
-    <script src="{% static 'js/ConvolutionShader.js' %}"></script>
-    <script src="{% static 'js/LuminosityHighPassShader.js' %}"></script>
-    <script src="{% static 'js/ShaderPass.js' %}"></script>
-<canvas class="webgl">
-        </canvas>
-    <h1 style="color: white">Hi</h1>
-<script>
-scene = new THREE.Scene();
-const fov = 45;
-const aspect = window.innerWidth / window.innerHeight;
-const near = 0.1;
-const far = 1000;
-const canvas = document.getElementsByTagName("canvas")[0];
-renderer = new THREE.WebGLRenderer({
-  canvas: canvas,
-  antialias: true,
-});
-renderer.autoClear = false;
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(window.devicePixelRatio ? window.devicePixelRatio : 1);
-console.log(window.innerWidth);
-renderer.setClearColor(0x000000, 0.0);
-document.body.appendChild(renderer.domElement);
-
-camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-camera.position.set(0,0,10);
-scene.add(camera);
-camera.resize = false;
-
-const renderScene = new THREE.RenderPass(scene, camera);
-const bloomPass = new THREE.UnrealBloomPass(
-  new THREE.Vector2(window.innerWidth, window.innerHeight),
-  1.5,
-  0.4,
-  0.85
-);
-bloomPass.threshold = 0;
-bloomPass.strength = 2; //intensity of glow
-bloomPass.radius = 0;
-scene.add(bloomPass);
-const bloomComposer = new THREE.EffectComposer(renderer);
-bloomComposer.setSize(window.innerWidth, window.innerHeight);
-bloomComposer.renderToScreen = true;
-bloomComposer.addPass(renderScene);
-bloomComposer.addPass(bloomPass);
-
-
-// galaxy geometry
-const starGeometry = new THREE.SphereGeometry(80, 64, 64);
-
-// galaxy material
-const starMaterial = new THREE.MeshBasicMaterial({
-  map: THREE.ImageUtils.loadTexture("{% static 'img/galaxy1.png' %}"),
-  side: THREE.BackSide,
-  transparent: true,
-});
-
-
-const starMesh = new THREE.Mesh(starGeometry, starMaterial);
-scene.add(starMesh);
-
-//ambient light
-const ambientlight = new THREE.AmbientLight(0xffffff, 1);
-scene.add(ambientlight);
-
-const animate = () => {
-  requestAnimationFrame(animate);
-  starMesh.rotation.y += 0.001;
-  renderer.render(scene,camera);
-  bloomComposer.render();
-};
-
-animate();
-</script>
+<div class="maintext">
+    <div class="heading">
+        <h1 class="head">Registration Technology</h1>
+    </div>
+    <div class="top-head">
+    <p>This is the frontface of the Product, from here you can navigate to core parts of the product.</p>
+    <p>This product is mainly designed to handle any specific type of event, from registration to participant handling.</p>
+     </div>
+<div class="rem">
+    <button onclick="feature()" id="feat">Features</button>
+    <div class="ft" id="ft">
+    <div class="features" id="feature" style="display: none">
+    <p>Let's Understand the Hierarchy and Features of the users</p>
+    <ol>
+        <li>Superuser</li>
+        <ul>
+            <li>Add Coordinator</li>
+            <li>Edit Participant Data</li>
+            <li>Edit Coordinator Sessions</li>
+            <li>Manage and Delete Coordinator Accounts</li>
+        </ul>
+        <li>Coordinator</li>
+        <ul>
+            <li>Works Under Superuser</li>
+            <li>Limited Edit Access to Participant Data</li>
+            <li>Participant Checkin and QR Tag Assignment</li>
+            <li>Participant Tracker</li>
+        </ul>
+        <li>Participant</li>
+        <ul>
+            <li>Can view their Details from the QR Assigned.</li>
+        </ul>
+    </ol>
+    </div>
+    </div>
+    <button onclick="workflow()" id="feat">Workflow</button>
+    <div class="workflow" id="workflow" style="display: none">
+    <p>The Workflow of this product is as follows.</p>
+    <ul>
+        <li>Participant registers through Registration Page.</li>
+        <li>Participant Receives a delegate pass with Event ID and Registration ID</li>
+        <li>On the Event Day, the Participant can approach any Coordinator and confirm their checkin by providing the OTP received on their registered email.</li>
+        <li>When the Checkin is Confirmed, the Participant is Assigned with a Participant ID, which is used to Identify a particular person.</li>
+        <li>Next Participant can Acquire a QR Tag which can be assigned to one by any Coordinator, upon scanning the QR the user is redirect to details of the Person, ofcourse details are limited and no vital details are exposed.</li>
+    </ul>
+    </div>
+<div class="buttons">
+    <button id="button"><a href="{% url 'registration' %}">Register</a></button>
+    <button id="button"><a href="{% url 'coordinator_login' %}">Coordinator</a></button>
+    <button id="button"><a href="{% url 'superuser_login' %}">Superuser</a></button>
+</div>
+</div>
+</div>
 </body>
 </html>
